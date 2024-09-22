@@ -6,17 +6,17 @@ This project is still work in progress and early state. The functionality is lim
 The code base is currently messy ;-)
 
 Status:
-[x] Detect, extract and convert markdown building blocks into a python dictionary
-[x] Store the python dictionary in a variable of the `Markdown` class
-[x] Function to respond the dictionary into a JSON
-[ ] Clean up the code base. Add more strucutre.
-[ ] Consider hierarchy of building blocks by headers
-[ ] Provide more documentation
-[ ] Experiment with Pydantic's BaseModel and the automatic creation of it with [datamodel-code-generator](https://koxudaxi.github.io/datamodel-code-generator/jsondata/)
-[ ] Additional function to extract different types of syntax like URLs or tags
-[ ] Additional function to only get back a certain
-[ ] Refactor and add more tests
-[ ] Publish on PyPI
+- [x] Detect, extract and convert markdown building blocks into a python dictionary
+- [x] Store the python dictionary in a variable of the `Markdown` class
+- [x] Function to respond the dictionary into a JSON
+- [ ] Clean up the code base. Add more strucutre.
+- [ ] Consider hierarchy of building blocks by headers
+- [ ] Provide more documentation
+- [ ] Experiment with Pydantic's BaseModel and the automatic creation of it with [datamodel-code-generator](https://koxudaxi.github.io/datamodel-code-generator/jsondata/)
+- [ ] Additional function to extract different types of syntax like URLs or tags
+- [ ] Additional function to only get back a certain
+- [ ] Refactor and add more tests
+- [ ] Publish on PyPI
 
 
 **Table of content**:
