@@ -109,7 +109,7 @@ Output:
 
 ## Why?
 
-Markdown is at least a structured format. The structured is build by the buildings blocks of markdown. Examples are header starting with a `# ` and go up to six `###### `. Or lists starting with a `- `.
+Markdown is at least a structured format. The structured is build by the buildings blocks of markdown. Examples are header starting with a "# " and go up to six "###### ". Or lists starting with a "- ".
 There are a lot of tools to convert markdown into HTML or wise verca. And you will as well find tool to convert markdown into JSON. But markdown comes with additional flavours which are not part of the common markdown syntax (e.g. tables, definition lists or fenced codeblocks) and in my research were not covered by the tools that I found.
 
 I wanted the markdown to be converted into an easy to process format like a python dictionary or a JSON. It has to be reliable in a way that the output format for a certain building block has always the same structure to expect.
