@@ -74,37 +74,53 @@ print(Markdown(markdown).markdown_dict)
 
 Output:
 ```
-{
-    "metadata": {
-        "title": "Example text",
-        "author": "John Doe",
-        "tags": ["markdown", "example"]
+[
+    {
+        'metadata': {
+            'title': 'Example text',
+            'author': 'John Doe',
+            'tags': ['markdown', 'example']
+        }
     },
-    "content": {
-        "h1_1": {
-            "heading": "A h1 header",
-            "paragraph": "A paragraph below the h1 header",
-            "paragraph": "A new paragraph",
-            "h2_1": {
-                "heading": "A h2 header with a list below",
-                "list_1": [[Item 1], [Item 2], [[Subitem 1]]]
-            }
-        },
-        "h1_2": {
-            "heading": "Another h1 header",
-            "table_1": [
+    {
+        'h1': {
+            'title': 'A h1 header',
+            'content': [
+                {'paragraph': 'A paragraph below the h1 header'},
+                {'paragraph': 'A new paragraph'},
                 {
-                    "Column 1": "Cell 1",
-                    "Column 2": "Cell 2"
-                },
+                    'h2': {
+                        'title': 'A h2 header with a list below',
+                        'content': [
+                            {
+                                'list': {
+                                    'type': 'ul',
+                                    'list': [
+                                        ['Item 1'],
+                                        ['Item 2', [['Subitem 1']]]
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    {
+        'h1': {
+            'title': 'Another h1 header',
+            'content': [
                 {
-                    "Column 1": "Cell 3",
-                    "Column 2": "Cell 4"
+                    'table': [
+                        {'Column 1': 'Cell 1', 'Column 2': 'Cell 2'},
+                        {'Column 1': 'Cell 3', 'Column 2': 'Cell 4'}
+                    ]
                 }
             ]
         }
     }
-}
+]
 ```
 
 ## Why?
@@ -128,18 +144,252 @@ This library is able to process the following building blocks from markdown into
 
 ### Metadata
 
+Input:
+```
+---
+title: Example text
+author: John Doe
+tags: [markdown, example]
+---
+```
+
+Output:
+```
+[
+    {
+        'metadata': {
+            'title': 'Example text',
+            'author': 'John Doe',
+            'tags': ['markdown', 'example']
+        }
+    }
+]
+```
+
 ### Headers
 
+Input:
+```markdown
+# A h1 header
+```
+
+**General structure of a heading**:
+Output:
+```
+[{'h1': {'title': 'A h1 header', 'content': []}}]
+```
+
+**Hierarchical structure**:
+
+Input:
+```
+# A h1 header
+
+A paragraph below the h1 header
+A new paragraph
+
+## A h2 header with a list below
+
+- Item 1
+- Item 2
+    - Subitem 1
+```
+
+Output:
+```
+[
+    {
+        'h1': {
+            'title': 'A h1 header',
+            'content': [
+                {'paragraph': 'A paragraph below the h1 header'},
+                {'paragraph': 'A new paragraph'},
+                {
+                    'h2': {
+                        'title': 'A h2 header with a list below',
+                        'content': [
+                            {
+                                'list': {
+                                    'type': 'ul',
+                                    'list': [
+                                        ['Item 1'],
+                                        ['Item 2', [['Subitem 1']]]
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+]
+```
 ### Lists
+
+**Unordered lists**:
+
+Input:
+```
+- Item 1
+- Item 2
+    - Subitem 1
+```
+
+Output:
+```
+[
+    {
+        'list': {
+            'type': 'ul', 
+            'list': [
+                [
+                    'Item 1'
+                ], 
+                [
+                    'Item 2', 
+                    [
+                        [
+                            'Subitem 1'
+                        ]
+                    ]
+                ]
+            ]
+        }
+    }
+]
+```
+
+**Ordered lists**:
+
+Input:
+```
+1. Item 1
+2. Item 2
+    1. Subitem 1
+```
+
+Output:
+```
+[
+    {
+        'list': {
+            'type': 'ol', 
+            'list': [
+                ['Item 1'], 
+                [
+                    'Item 2', 
+                    [
+                        [
+                            'Subitem 1'
+                        ]
+                    ]
+                ]
+            ]
+        }
+    }
+]
+```
 
 ### Tables
 
+Input:
+```
+| Column 1 | Column 2 |
+|----------|----------|
+| Cell 1   | Cell 2   |
+| Cell 3   | Cell 4   |
+```
+
+Output:
+```
+[
+    {
+        'table': [
+            {
+                'Column 1': 'Cell 1', 'Column 2': 'Cell 2'
+            }, 
+            {
+                'Column 1': 'Cell 3', 'Column 2': 'Cell 4'
+            }
+        ]
+    }
+]
+```
+
 ### Code blocks
+
+Input:
+```python
+def hello():
+    print('Hello world!')
+```
+
+Output:
+```
+[
+    {
+        'code': {
+            'language': 'python', 
+            'content': "def hello():\n    print('Hello world!')"
+        }
+    }
+]
+```
 
 ### Definition lists
 
+Input:
+```
+A term to define
+: A definition for the term
+: A second definition for the term
+```
+
+Output:
+```
+[
+    {
+        'def_list': {
+            'term': 'A term to define', 
+            'list': [
+                'A definition for the term', 
+                'A second definition for the term'
+            ]
+        }
+    }
+]
+```
+
 ### Blockquotes
 
+Input:
+```
+> Blockquote in frist level
+>> Blockquote in second level
+> Another blockquote in first level
+```
+
+Output:
+```
+[
+    {
+        'blockquote': [
+            [
+                'Blockquote in frist level'
+            ], 
+            [
+                [
+                    'Blockquote in second level'
+                ]
+            ], 
+            [
+                'Another blockquote in first level'
+            ]
+        ]
+    }
+]
+```
 
 **What are the limitations?**
 - not all flavors of markdown are covered
