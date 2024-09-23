@@ -1,10 +1,15 @@
 import pytest
-from markdown_to_data.markdown_to_data import MarkdownMapper
+from markdown_to_data.utils.joining_and_extraction.extraction import MarkdownExtractor
+
+# TODO: No def list extraction from MarkdownExtractor
+# look into extraction.py and join.py
+
+# pytest test_def_lists.py
 
 @pytest.fixture
 def mapper():
     """Fixture to initialize the MarkdownMapper instance."""
-    return MarkdownMapper()
+    return MarkdownExtractor()
 
 def test_extract_md_def_list_single(mapper):
     markdown_with_def_list = """
@@ -33,5 +38,3 @@ Term 2
             "list": ["Definition for term 1", "Another definition for term 1"]
         }
     assert result == expected, f"Expected {expected}, but got {result}"
-
-# pytest test_def_lists.py

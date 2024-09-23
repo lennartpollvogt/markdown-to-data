@@ -1,20 +1,26 @@
+'''
+This file contains methods to join the related lines of the classisification outcome.
+After joining the lines they get converted into the intended structure of each building block.
+'''
+
+
 from typing import Text, Any, List, Dict
 
-from .extraction_helper import MarkdownExtractor
+from .extraction import MarkdownExtractor
 
 extractor = MarkdownExtractor()
 
 ################
-# MERGE
+# JOIN RELATED LINES
 ################
 
 # METADATA
-def join_metadata_lines_properly(final_list: List[Dict[str, Text | Any]]) -> List[Dict[str, Text | Any]]:
+def join_metadata_lines_properly(classified_list: List[Dict[str, Text | Any]]) -> List[Dict[str, Text | Any]]:
     result: List[Dict[str, Text | Any]] = []
     metadata_dict = {}
     in_metadata = False
     
-    for item in final_list:
+    for item in classified_list:
         if list(item.keys())[0] == 'metadata':
             if item['metadata'].strip() == '---':
                 if in_metadata:
@@ -57,7 +63,7 @@ def join_metadata_lines_properly(final_list: List[Dict[str, Text | Any]]) -> Lis
     return result
 
 # CODE
-def join_code_lines_properly(final_list: List[Dict[str, Text | Any]]) -> List[Dict[str, Text | Any]]:
+def join_code_lines_properly(classified_list: List[Dict[str, Text | Any]]) -> List[Dict[str, Text | Any]]:
     '''
     Iterates over the final list and joines the code lines into a single line.
     It checks for starting ``` and ending ``` to join correctly.
@@ -68,7 +74,7 @@ def join_code_lines_properly(final_list: List[Dict[str, Text | Any]]) -> List[Di
     temp_code_block = []
     start_delimiter = None
 
-    for item in final_list:
+    for item in classified_list:
         if list(item.keys())[0] == 'code':
             if item['code'].startswith('```'):
                 if in_code_block:
@@ -101,7 +107,7 @@ def join_code_lines_properly(final_list: List[Dict[str, Text | Any]]) -> List[Di
     return result
 
 # LISTS
-def join_list_lines_properly(final_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def join_list_lines_properly(classified_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     '''
     Iterates over each line and joins comprehensive list lines to one list dictionary.
     '''
@@ -109,7 +115,7 @@ def join_list_lines_properly(final_list: List[Dict[str, Any]]) -> List[Dict[str,
     in_list_block = False
     temp_list_block = []
 
-    for item in final_list:
+    for item in classified_list:
         if list(item.keys())[0] == 'list':
             if in_list_block:
                 temp_list_block.append(item['list'])
@@ -132,12 +138,12 @@ def join_list_lines_properly(final_list: List[Dict[str, Any]]) -> List[Dict[str,
     return result  
 
 # DEFINITION LISTS
-def join_def_list_lines_properly(final_list: List[Dict[str, Text | Any]]) -> List[Dict[str, Text | Any]]:
+def join_def_list_lines_properly(classified_list: List[Dict[str, Text | Any]]) -> List[Dict[str, Text | Any]]:
     result = []
     current_term = None
     current_definitions = []
 
-    for item in final_list:
+    for item in classified_list:
         if list(item.keys())[0] == 'term':
             if current_term:
                 # Process the previous definition list
@@ -181,7 +187,7 @@ def join_def_list_lines_properly(final_list: List[Dict[str, Text | Any]]) -> Lis
     return result 
 
 # TABLES
-def join_table_lines_properly(final_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def join_table_lines_properly(classified_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     '''
     Iterates over each line and joins comprehensive lines with key 'table'.
     Handles various cases including separated tables and tables with multiple column rows.
@@ -195,7 +201,7 @@ def join_table_lines_properly(final_list: List[Dict[str, Any]]) -> List[Dict[str
         cells = row.split('|')[1:-1]  # Ignore first and last '|' characters
         return all(cell.strip().replace('-', '') == '' for cell in cells)
 
-    for item in final_list:
+    for item in classified_list:
         if list(item.keys())[0] == 'table':
             if in_table_block:
                 if is_separator_row(item['table']) and len(temp_table_block) > 1:
@@ -227,7 +233,7 @@ def join_table_lines_properly(final_list: List[Dict[str, Any]]) -> List[Dict[str
     return result
 
 # BLOCKQUOTES
-def join_blockquote_lines_properly(final_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def join_blockquote_lines_properly(classified_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     '''
     Joins the comprehensive blockquotes.
     Example:
@@ -253,7 +259,7 @@ def join_blockquote_lines_properly(final_list: List[Dict[str, Any]]) -> List[Dic
     in_blockquote = False
     temp_blockquote_content = []
 
-    for item in final_list:
+    for item in classified_list:
         if list(item.keys())[0] == 'blockquote':
             if not in_blockquote:
                 in_blockquote = True
@@ -275,35 +281,9 @@ def join_blockquote_lines_properly(final_list: List[Dict[str, Any]]) -> List[Dic
 
 from typing import List, Dict, Any
 
-def delete_empty_paragraphs(final_list: List[Dict[str, Any]]) -> List[Dict[str, str | Any]]:
+def delete_empty_paragraphs(classified_list: List[Dict[str, str]]) -> List[Dict[str, str | Any]]:
     '''
     Deletes all rows with key 'paragraph' which are empty (= '').
     '''
-    return [item for item in final_list if not (list(item.keys())[0] == 'paragraph' and list(item.values())[0].strip() == '')]  
+    return [item for item in classified_list if not (list(item.keys())[0] == 'paragraph' and list(item.values())[0].strip() == '')]  
            
-
-
-# FINAL MERGE
-def md_join_lines_to_building_blocks(final_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    '''
-    Iterating over the list and merge patterns
-    '''
-    # Metadata:
-    final_list = join_metadata_lines_properly(final_list=final_list)
-    # Lists: comprehensive lists are separated by every other building blocks.
-    final_list = join_list_lines_properly(final_list=final_list)
-    # Definition lists: 
-    final_list = join_def_list_lines_properly(final_list=final_list)
-    # Tables: be ware of |---|. This is giving information if there is a new table with new column header
-    final_list = join_table_lines_properly(final_list=final_list)
-    # Code: has to start with ``` and end with ```.
-    final_list = join_code_lines_properly(final_list=final_list)
-    # Blockquotes:
-    final_list = join_blockquote_lines_properly(final_list=final_list)
-    # Paragraphs: do not merge paragraphs but delete empty paragraphs. Why? -> because maybe later we want to specify paragraphs in pydantic
-    final_list = delete_empty_paragraphs(final_list=final_list)
-
-    # Hierarchy: # TODO: constructing the hierarchy of the markdown
-     
-
-    return final_list

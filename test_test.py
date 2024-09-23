@@ -88,7 +88,6 @@ some text
 > new blockquote
 '''
 
-markdown = Markdown(markdown_example)
-
+markdown = Markdown(markdown_example, hierarchy=True)
 rich.print(markdown.markdown_dict)
-print(markdown.md_to_json())
+#print(markdown.md_to_json(indent=1))

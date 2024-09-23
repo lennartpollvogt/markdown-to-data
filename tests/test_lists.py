@@ -1,10 +1,12 @@
 import pytest
-from markdown_to_data.markdown_to_data import MarkdownMapper
+from markdown_to_data.utils.joining_and_extraction.extraction import MarkdownExtractor
+
+# pytest test_lists.py
 
 @pytest.fixture
 def mapper():
     """Fixture to initialize the MarkdownMapper instance."""
-    return MarkdownMapper()
+    return MarkdownExtractor()
 
 def test_extract_md_list_unordered(mapper):
     markdown_with_list = """
@@ -149,5 +151,3 @@ It contains some text, but no lists.
     expected = {}
     
     assert result == expected, f"Expected {expected}, but got {result}"
-
-# pytest test_lists.py

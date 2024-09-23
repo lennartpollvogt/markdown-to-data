@@ -1,9 +1,11 @@
 import pytest
-from markdown_to_data.markdown_to_data import MarkdownMapper
+from markdown_to_data.utils.joining_and_extraction.extraction import MarkdownExtractor
+
+# pytest test_tables.py
 
 @pytest.fixture
 def mapper():
-    return MarkdownMapper()
+    return MarkdownExtractor()
 
 def test_extract_md_table_valid_from_two(mapper):
     markdown_with_table = """
@@ -131,6 +133,3 @@ This is a markdown snippet without any table.
     result = mapper._extract_md_table(markdown_without_table)
     expected = []
     assert result == expected, f"Expected empty list, but got {result}"
-
-
-# pytest test_tables.py

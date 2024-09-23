@@ -1,9 +1,14 @@
 import pytest
-from markdown_to_data.markdown_to_data import MarkdownMapper
+from markdown_to_data.utils.joining_and_extraction.extraction import MarkdownExtractor
+
+# TODO: No metadata extraction from MarkdownExtractor
+# look into extraction.py and join.py
+
+# pytest test_metadata.py
 
 @pytest.fixture
-def mapper() -> MarkdownMapper:
-    return MarkdownMapper()
+def mapper() -> MarkdownExtractor:
+    return MarkdownExtractor()
 
 def test_extract_md_metadata_valid(mapper):
     markdown_with_metadata = """
@@ -88,5 +93,3 @@ This is a test document.
     with pytest.raises(ValueError):
         mapper._extract_md_metadata(malformed_metadata)
 
-
-# pytest test_metadata.py

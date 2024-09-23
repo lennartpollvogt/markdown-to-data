@@ -1,8 +1,8 @@
-from typing import List, Dict, Any, Text
+from typing import List, Dict, Any
 import json
 
-from .utils.classification import md_line_classification
-from .utils.merging import md_join_lines_to_building_blocks
+from .utils.classification.classification import md_line_classification
+from .utils.finalize import final_md_data
 
 
 class Markdown():
@@ -30,23 +30,27 @@ class Markdown():
     {"h1_1": {"heading": "A header", "list_1": {"type": "ul", "list": [["Item 1"], ["Item 2"], ["Item 3"]]}}}
     ```
     '''
-    def __init__(self, markdown: str):
+    def __init__(self, markdown: str, hierarchy: bool = True):
         self.markdown: str = markdown
         self.markdown_dict: List[Dict[str, Any]]
+        self.hierarchy: bool = hierarchy
         self._markdown_to_data()
 
     def _markdown_to_data(self) -> Dict[str, Any]:
         '''
         Based on a given markdown it returns the converted python dictionary and stores it into the class variable `self.markdown_dict`.
+
+        Args:
+            - hierarchy: If the hierarchy of the markdown should be considered
         '''
         if not isinstance(self.markdown, str):
             what_type = type(self.markdown)
             raise TypeError(f"Expected a string for arg 'markdown'. Got {what_type}")
-        data = md_join_lines_to_building_blocks(final_list=md_line_classification(markdown=self.markdown))
+        data = final_md_data(classified_list=md_line_classification(markdown=self.markdown), hierarchy=self.hierarchy)
         self.markdown_dict = data
 
-    def md_to_json(self):
+    def md_to_json(self, indent: int | str | None =None):
         '''
         Convert the dictionary `markdown_dict` into JSON.
         '''
-        return json.dumps(obj=self.markdown_dict)
+        return json.dumps(obj=self.markdown_dict, indent=indent)

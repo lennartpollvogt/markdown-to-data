@@ -1,10 +1,13 @@
 import pytest
-from markdown_to_data.utils.extraction_helper import MarkdownMapper
+from markdown_to_data.utils.joining_and_extraction.extraction import MarkdownExtractor
+
+# pytest test_blockquotes.py
+
 
 @pytest.fixture
 def mapper():
     """Fixture to initialize the MarkdownMapper instance."""
-    return MarkdownMapper()
+    return MarkdownExtractor()
 
 def test_extract_md_blockquote_1(mapper):
     def_list_1 = '''
@@ -104,5 +107,3 @@ def test_nested_blockquote_with_empty_lines_(mapper):
         [[["Deeply nested quote"]]]
     ]
     assert mapper._extract_md_blockquote(input_text) == expected_output
-
-# pytest test_blockquotes.py

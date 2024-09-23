@@ -1,9 +1,11 @@
 import pytest
-from markdown_to_data.markdown_to_data import MarkdownMapper
+from markdown_to_data.utils.joining_and_extraction.extraction import MarkdownExtractor
+
+# pytest test_md_code_blocks.py
 
 @pytest.fixture
 def md_converter():
-    return MarkdownMapper()
+    return MarkdownExtractor()
 
 def test_extract_code_block_without_language(md_converter):
     markdown = """
@@ -142,5 +144,3 @@ def outer_function():
     assert md_converter._extract_md_code(markdown) == expected_result
 '''
     
-
-# pytest test_md_code_blocks.py
