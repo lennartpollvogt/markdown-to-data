@@ -1,5 +1,5 @@
 # markdown-to-data
-Convert markdown and its buildings blocks (tables, code, etc.) into structured and easy processable data (Dictionary, JSON)
+Convert markdown and its buildings blocks (tables, lists, code, etc.) into structured and easy processable data (Python list or JSON array)
 
 [WIP]
 This project is still work in progress and early state. The functionality is limitted (see Status).
@@ -9,11 +9,11 @@ Status:
 - [x] Store the python dictionary in a variable of the `Markdown` class
 - [x] Function to respond the dictionary into a JSON
 - [x] Clean up the code base. Add more strucutre.
-- [x] Consider hierarchy of building blocks by headers
+- [x] Consider hierarchy of building blocks by headers (set `hierarchy` to `True`)
 - [ ] Provide more documentation
 - [ ] Experiment with Pydantic's BaseModel and the automatic creation of it with [datamodel-code-generator](https://koxudaxi.github.io/datamodel-code-generator/jsondata/)
 - [ ] Additional function to extract different types of syntax like URLs or tags
-- [ ] Additional function to only get back a certain kind of building blocks (e.g. only tables or lists or both)
+- [x] Additional function to only get back a certain kind of building blocks (e.g. only tables or lists or both)
 - [ ] Refactor and add more tests
 - [ ] Publish on PyPI
 
@@ -31,6 +31,8 @@ Status:
     - [Blockquotes](#blockquotes)
 
 ## Quick overview
+
+#### The `Markdown` class
 
 `markdown-to-data` is able to convert markdown formatted text into processable data (`dict`) considering the hierarchy of each the building block.
 
@@ -68,10 +70,39 @@ A new paragraph
 | Cell 3   | Cell 4   |
 '''
 
-print(Markdown(markdown).markdown_dict)
+print(Markdown(markdown=markdown, hierarchy=False).markdown_list)
+# >>> returns list of dictionaries. Each dicationary is a building block
+print(Markdown(markdown=markdown, hierarchy=True).markdown_list)
+# >>> returns a list of dictionaries providing a hierarchical structure based on headers
 ```
 
-Output:
+Output `hierarchy = False`:
+```
+[
+    {
+        'metadata': {
+            'title': 'Example text',
+            'author': 'John Doe',
+            'tags': ['markdown', 'example']
+        }
+    },
+    {'h1': 'A h1 header'},
+    {'paragraph': 'A paragraph below the h1 header'},
+    {'paragraph': 'A new paragraph'},
+    {'h2': 'A h2 header with a list below'},
+    {'list': {'type': 'ul', 'list': [['Item 1'], ['Item 2', [['Subitem 1']]]]}},
+    {'h1': 'Another h1 header'},
+    {
+        'table': [
+            {'Column 1': 'Cell 1', 'Column 2': 'Cell 2'},
+            {'Column 1': 'Cell 3', 'Column 2': 'Cell 4'}
+        ]
+    }
+]
+```
+
+
+Output `hierarchy = True`:
 ```
 [
     {
@@ -122,9 +153,27 @@ Output:
 ]
 ```
 
+#### Return specific building blocks
+
+Take the example code above and add the following:
+
+```python
+# ... previous code
+
+print(markdown2.get_md_building_blocks(blocks=['table', 'list']))
+```
+
+Output:
+```
+[
+    {'list': {'type': 'ul', 'list': [['Item 1'], ['Item 2', [['Subitem 1']]]]}},
+    {'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}, {'Column 1': 'Cell 3', 'Column 2': 'Cell 4'}]}
+]
+```
+
 ## Why?
 
-Markdown is at least a structured format. The structured is build by the buildings blocks of markdown. Examples are header starting with a "# " and go up to six "###### ". Or lists starting with a "- ".
+Markdown is at least a structured format. The structured is built by the buildings blocks of the markdown syntax. Examples are headers starting with a `# ` and go up to six `###### `. Or lists starting with a `- `.
 There are a lot of tools to convert markdown into HTML or wise verca. And you will as well find tool to convert markdown into JSON. But markdown comes with additional flavours which are not part of the common markdown syntax (e.g. tables, definition lists or fenced codeblocks) and in my research were not covered by the tools that I found.
 
 I wanted the markdown to be converted into an easy to process format like a python dictionary or a JSON. It has to be reliable in a way that the output format for a certain building block has always the same structure to expect.
@@ -152,17 +201,15 @@ tags: [markdown, example]
 ---
 ```
 
-Output:
+Output (`hierarcy`= `True` OR `False`):
 ```
-[
-    {
-        'metadata': {
-            'title': 'Example text',
-            'author': 'John Doe',
-            'tags': ['markdown', 'example']
-        }
+{
+    'metadata': {
+        'title': 'Example text',
+        'author': 'John Doe',
+        'tags': ['markdown', 'example']
     }
-]
+}
 ```
 
 ### Headers
@@ -173,57 +220,17 @@ Input:
 ```
 
 **General structure of a heading**:
-Output:
+Output (`hierarcy`= `True`):
 ```
-[{'h1': {'title': 'A h1 header', 'content': []}}]
+{'h1': {'title': 'A h1 header', 'content': []}}
 ```
+> In a hierarchical strucutred output `content` will contain all sub-items of `h1`
 
-**Hierarchical structure**:
-
-Input:
+Output (`hierarcy`= `False`)
 ```
-# A h1 header
-
-A paragraph below the h1 header
-A new paragraph
-
-## A h2 header with a list below
-
-- Item 1
-- Item 2
-    - Subitem 1
+{'h1': 'A h1 header'}
 ```
 
-Output:
-```
-[
-    {
-        'h1': {
-            'title': 'A h1 header',
-            'content': [
-                {'paragraph': 'A paragraph below the h1 header'},
-                {'paragraph': 'A new paragraph'},
-                {
-                    'h2': {
-                        'title': 'A h2 header with a list below',
-                        'content': [
-                            {
-                                'list': {
-                                    'type': 'ul',
-                                    'list': [
-                                        ['Item 1'],
-                                        ['Item 2', [['Subitem 1']]]
-                                    ]
-                                }
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
-    }
-]
-```
 ### Lists
 
 **Unordered lists**:
@@ -235,28 +242,26 @@ Input:
     - Subitem 1
 ```
 
-Output:
+Output (`hierarcy`= `True` OR `False`):
 ```
-[
-    {
-        'list': {
-            'type': 'ul', 
-            'list': [
+{
+    'list': {
+        'type': 'ul', 
+        'list': [
+            [
+                'Item 1'
+            ], 
+            [
+                'Item 2', 
                 [
-                    'Item 1'
-                ], 
-                [
-                    'Item 2', 
                     [
-                        [
-                            'Subitem 1'
-                        ]
+                        'Subitem 1'
                     ]
                 ]
             ]
-        }
+        ]
     }
-]
+}
 ```
 
 **Ordered lists**:
@@ -268,26 +273,24 @@ Input:
     1. Subitem 1
 ```
 
-Output:
+Output (`hierarcy`= `True` OR `False`):
 ```
-[
-    {
-        'list': {
-            'type': 'ol', 
-            'list': [
-                ['Item 1'], 
+{
+    'list': {
+        'type': 'ol', 
+        'list': [
+            ['Item 1'], 
+            [
+                'Item 2', 
                 [
-                    'Item 2', 
                     [
-                        [
-                            'Subitem 1'
-                        ]
+                        'Subitem 1'
                     ]
                 ]
             ]
-        }
+        ]
     }
-]
+}
 ```
 
 ### Tables
@@ -300,20 +303,18 @@ Input:
 | Cell 3   | Cell 4   |
 ```
 
-Output:
+Output (`hierarcy`= `True` OR `False`):
 ```
-[
-    {
-        'table': [
-            {
-                'Column 1': 'Cell 1', 'Column 2': 'Cell 2'
-            }, 
-            {
-                'Column 1': 'Cell 3', 'Column 2': 'Cell 4'
-            }
-        ]
-    }
-]
+{
+    'table': [
+        {
+            'Column 1': 'Cell 1', 'Column 2': 'Cell 2'
+        }, 
+        {
+            'Column 1': 'Cell 3', 'Column 2': 'Cell 4'
+        }
+    ]
+}
 ```
 
 ### Code blocks
@@ -324,16 +325,14 @@ def hello():
     print('Hello world!')
 ```
 
-Output:
+Output (`hierarcy`= `True` OR `False`):
 ```
-[
-    {
-        'code': {
-            'language': 'python', 
-            'content': "def hello():\n    print('Hello world!')"
-        }
+{
+    'code': {
+        'language': 'python', 
+        'content': "def hello():\n    print('Hello world!')"
     }
-]
+}
 ```
 
 ### Definition lists
@@ -345,19 +344,17 @@ A term to define
 : A second definition for the term
 ```
 
-Output:
+Output (`hierarcy`= `True` OR `False`):
 ```
-[
-    {
-        'def_list': {
-            'term': 'A term to define', 
-            'list': [
-                'A definition for the term', 
-                'A second definition for the term'
-            ]
-        }
+{
+    'def_list': {
+        'term': 'A term to define', 
+        'list': [
+            'A definition for the term', 
+            'A second definition for the term'
+        ]
     }
-]
+}
 ```
 
 ### Blockquotes
@@ -369,25 +366,23 @@ Input:
 > Another blockquote in first level
 ```
 
-Output:
+Output (`hierarcy`= `True` OR `False`):
 ```
-[
-    {
-        'blockquote': [
+{
+    'blockquote': [
+        [
+            'Blockquote in frist level'
+        ], 
+        [
             [
-                'Blockquote in frist level'
-            ], 
-            [
-                [
-                    'Blockquote in second level'
-                ]
-            ], 
-            [
-                'Another blockquote in first level'
+                'Blockquote in second level'
             ]
+        ], 
+        [
+            'Another blockquote in first level'
         ]
-    }
-]
+    ]
+}
 ```
 
 **What are the limitations?**

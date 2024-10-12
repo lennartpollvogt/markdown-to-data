@@ -15,7 +15,7 @@ from .hierarchy.hierarchy import build_hierarchy
 #########################
 # FINAL MD DATA
 #########################
-def final_md_data(classified_list: List[Dict[str, Any]], hierarchy: bool = True) -> List[Dict[str, Any]]:
+def final_md_data_as_list(classified_list: List[Dict[str, Any]], hierarchy: bool = True) -> List[Dict[str, Any]]:
     '''
     Takes a stripped and classified list of markdown rows. -> see classification.py
     Hands over the list to different functions for joining, extracting and convert the data -> see join.py and extraction.py
