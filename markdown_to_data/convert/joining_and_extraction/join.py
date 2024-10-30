@@ -23,7 +23,12 @@ def join_metadata_lines_properly(classified_list: List[Dict[str, Any]]) -> List[
     for i, item in enumerate(classified_list):
         if 'metadata' in item:
             metadata_indices.append(i)
-            if item['metadata'].strip() == '---':
+            # Check if metadata is already a dictionary
+            if isinstance(item['metadata'], dict):
+                metadata_dict.update(item['metadata'])
+                continue
+
+            if isinstance(item['metadata'], str) and item['metadata'].strip() == '---':
                 continue
 
             key, value = extractor._extract_metadata_kv(item['metadata'])
