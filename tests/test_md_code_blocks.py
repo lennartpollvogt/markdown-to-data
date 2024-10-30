@@ -1,5 +1,5 @@
 import pytest
-from markdown_to_data.utils.joining_and_extraction.extraction import MarkdownExtractor
+from markdown_to_data.convert.joining_and_extraction.extraction import MarkdownExtractor
 
 # pytest test_md_code_blocks.py
 
@@ -128,12 +128,12 @@ def test_nested_code_blocks(md_converter):
 ```python
 def outer_function():
     print("Outer function")
-    
+
     ```inner
     def inner_function():
         print("Inner function")
     ```
-    
+
     print("Back in outer function")
 ```
 """
@@ -143,4 +143,3 @@ def outer_function():
     }
     assert md_converter._extract_md_code(markdown) == expected_result
 '''
-    

@@ -1,5 +1,5 @@
 import pytest
-from markdown_to_data.utils.joining_and_extraction.extraction import MarkdownExtractor
+from markdown_to_data.convert.joining_and_extraction.extraction import MarkdownExtractor
 
 # pytest test_tables.py
 
@@ -51,7 +51,7 @@ Second table:
 '''
 def test_extract_md_table_valid_with_additional_top_row(mapper):
     markdown_with_table = """
-|                                Sales Overview                               | 
+|                                Sales Overview                               |
 | Service        | Q1 Sales ($) | Q2 Sales ($) | Total Sales ($) | Growth (%) |
 |----------------|--------------|--------------|-----------------|------------|
 | Cloud Services | 100,000      | 150,000      | 250,000         | 50%        |

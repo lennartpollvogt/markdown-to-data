@@ -1,5 +1,5 @@
 import pytest
-from markdown_to_data.utils.joining_and_extraction.extraction import MarkdownExtractor
+from markdown_to_data.convert.joining_and_extraction.extraction import MarkdownExtractor
 
 # pytest test_lists.py
 
@@ -14,7 +14,7 @@ def test_extract_md_list_unordered(mapper):
 - Item 2
 - Item 3
     """
-    
+
     result = mapper._extract_md_list(markdown_with_list)
     expected = {
         "type": "ul",
@@ -24,7 +24,7 @@ def test_extract_md_list_unordered(mapper):
             ["Item 3"]
         ]
     }
-    
+
     assert result == expected, f"Expected {expected}, but got {result}"
 
 def test_extract_md_list_unordered_from_two(mapper):
@@ -37,7 +37,7 @@ def test_extract_md_list_unordered_from_two(mapper):
 - Volkswagen
 - Honda
     """
-    
+
     result = mapper._extract_md_list(markdown_with_list)
     expected = {
         "type": "ul",
@@ -47,7 +47,7 @@ def test_extract_md_list_unordered_from_two(mapper):
             ["Item 3"]
         ]
     }
-    
+
     assert result == expected, f"Expected {expected}, but got {result}"
 
 def test_extract_md_list_ordered(mapper):
@@ -56,7 +56,7 @@ def test_extract_md_list_ordered(mapper):
 2. Second item
 3. Third item
     """
-    
+
     result = mapper._extract_md_list(markdown_with_list)
     expected = {
         "type": "ol",
@@ -66,7 +66,7 @@ def test_extract_md_list_ordered(mapper):
             ["Third item"]
         ]
     }
-    
+
     assert result == expected, f"Expected {expected}, but got {result}"
 
 def test_extract_md_list_nested_unordered(mapper):
@@ -77,7 +77,7 @@ def test_extract_md_list_nested_unordered(mapper):
   - Nested Item 2
 - Item 3
     """
-    
+
     result = mapper._extract_md_list(markdown_with_list)
     expected = {
         "type": "ul",
@@ -87,7 +87,7 @@ def test_extract_md_list_nested_unordered(mapper):
             ["Item 3"]
         ]
     }
-    
+
     assert result == expected, f"Expected {expected}, but got {result}"
 
 def test_extract_md_list_nested_ordered(mapper):
@@ -98,7 +98,7 @@ def test_extract_md_list_nested_ordered(mapper):
    2. Nested second
 3. Third item
     """
-    
+
     result = mapper._extract_md_list(markdown_with_list)
     expected = {
         "type": "ol",
@@ -108,7 +108,7 @@ def test_extract_md_list_nested_ordered(mapper):
             ["Third item"]
         ]
     }
-    
+
     assert result == expected, f"Expected {expected}, but got {result}"
 
 def test_extract_md_list_mixed_unordered(mapper):
@@ -119,7 +119,7 @@ def test_extract_md_list_mixed_unordered(mapper):
   2. Nested ordered 2
 - Third unordered item
     """
-    
+
     result = mapper._extract_md_list(markdown_with_list)
     expected = {
         "type": "ul",
@@ -129,16 +129,16 @@ def test_extract_md_list_mixed_unordered(mapper):
             ["Third unordered item"]
         ]
     }
-    
+
     assert result == expected, f"Expected {expected}, but got {result}"
 
 def test_extract_md_list_empty(mapper):
     markdown_with_empty_list = """
     """
-    
+
     result = mapper._extract_md_list(markdown_with_empty_list)
     expected = {}
-    
+
     assert result == expected, f"Expected {expected}, but got {result}"
 
 def test_extract_md_list_non_list_content(mapper):
@@ -146,8 +146,8 @@ def test_extract_md_list_non_list_content(mapper):
 This is a paragraph.
 It contains some text, but no lists.
     """
-    
+
     result = mapper._extract_md_list(markdown_without_list)
     expected = {}
-    
+
     assert result == expected, f"Expected {expected}, but got {result}"

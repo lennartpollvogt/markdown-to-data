@@ -1,5 +1,5 @@
 import pytest
-from markdown_to_data.utils.joining_and_extraction.extraction import MarkdownExtractor
+from markdown_to_data.convert.joining_and_extraction.extraction import MarkdownExtractor
 
 # pytest test_blockquotes.py
 
@@ -56,7 +56,7 @@ Text
 >>> With multiline
 '''
     output_4 = [
-        ["Note: this is a blockquote"], 
+        ["Note: this is a blockquote"],
         [[["With multiline"]]]
     ]
     assert mapper._extract_md_blockquote(def_list_4) == output_4
