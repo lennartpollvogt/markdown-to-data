@@ -15,52 +15,30 @@ extractor = MarkdownExtractor()
 ################
 
 # METADATA
-def join_metadata_lines_properly(classified_list: List[Dict[str, Text | Any]]) -> List[Dict[str, Text | Any]]:
-    result: List[Dict[str, Text | Any]] = []
+def join_metadata_lines_properly(classified_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Join metadata lines properly and convert them into a dictionary."""
     metadata_dict = {}
-    in_metadata = False
-    
-    for item in classified_list:
-        if list(item.keys())[0] == 'metadata':
+    metadata_indices = []
+
+    for i, item in enumerate(classified_list):
+        if 'metadata' in item:
+            metadata_indices.append(i)
             if item['metadata'].strip() == '---':
-                if in_metadata:
-                    # End of metadata block
-                    result.append({"metadata": metadata_dict})
-                    in_metadata = False
-                else:
-                    # Start of metadata block
-                    in_metadata = True
-                    metadata_dict = {}
-            elif in_metadata:
-                # Process metadata line
-                line = item['metadata'].strip()
-                if ':' in line:
-                    key, value = line.split(':', 1)
-                    key = key.strip()
-                    value = value.strip()
-                    
-                    if value.startswith('[') and value.endswith(']'):
-                        # Parse list value
-                        value = [v.strip() for v in value[1:-1].split(',')]
-                    else:
-                        # Keep as string
-                        value = value
-                    
-                    metadata_dict[key] = value
-        else:
-            if in_metadata:
-                # End of metadata block without a closing separator
-                result.append({"metadata": metadata_dict})
-                in_metadata = False
-            
-            # Add non-metadata item to the result
-            result.append(item)
-    
-    # Handle case where metadata block ends without a separator
-    if in_metadata:
-        result.append({"metadata": metadata_dict})
-    
-    return result
+                continue
+
+            key, value = extractor._extract_metadata_kv(item['metadata'])
+            if key:
+                metadata_dict[key] = value
+
+    if metadata_dict and metadata_indices:
+        # Remove all individual metadata lines
+        for index in sorted(metadata_indices, reverse=True):
+            classified_list.pop(index)
+
+        # Add the combined metadata dictionary at the start
+        classified_list.insert(0, {'metadata': metadata_dict})
+
+    return classified_list
 
 # CODE
 def join_code_lines_properly(classified_list: List[Dict[str, Text | Any]]) -> List[Dict[str, Text | Any]]:
@@ -135,7 +113,7 @@ def join_list_lines_properly(classified_list: List[Dict[str, Any]]) -> List[Dict
         #result.append({'list': '\n'.join(temp_list_block)})
         result.append({'list': extractor._extract_md_list(markdown_snippet='\n'.join(temp_list_block))})
 
-    return result  
+    return result
 
 # DEFINITION LISTS
 def join_def_list_lines_properly(classified_list: List[Dict[str, Text | Any]]) -> List[Dict[str, Text | Any]]:
@@ -153,7 +131,7 @@ def join_def_list_lines_properly(classified_list: List[Dict[str, Text | Any]]) -
                         'list': current_definitions
                     }
                 })
-            
+
             # Start a new definition list
             current_term = item['term']
             current_definitions = []
@@ -171,7 +149,7 @@ def join_def_list_lines_properly(classified_list: List[Dict[str, Text | Any]]) -
                 })
                 current_term = None
                 current_definitions = []
-            
+
             # Add non-definition list items to the result
             result.append(item)
 
@@ -184,7 +162,7 @@ def join_def_list_lines_properly(classified_list: List[Dict[str, Text | Any]]) -
             }
         })
 
-    return result 
+    return result
 
 # TABLES
 def join_table_lines_properly(classified_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -285,5 +263,4 @@ def delete_empty_paragraphs(classified_list: List[Dict[str, str]]) -> List[Dict[
     '''
     Deletes all rows with key 'paragraph' which are empty (= '').
     '''
-    return [item for item in classified_list if not (list(item.keys())[0] == 'paragraph' and list(item.values())[0].strip() == '')]  
-           
+    return [item for item in classified_list if not (list(item.keys())[0] == 'paragraph' and list(item.values())[0].strip() == '')]

@@ -16,7 +16,7 @@ class MarkdownExtractor:
             # Remove leading/trailing whitespace and pipe characters
             line = line.strip().strip('|')
             cells = [cell.strip() for cell in line.split('|')]
-            
+
             if i == 0:
                 headers = cells  # First line is the header
             elif i == 1: # TODO: could be risky, when not detecting `-` explicitly
@@ -35,7 +35,7 @@ class MarkdownExtractor:
             table_data.append(row_dict)
 
         return table_data
-    
+
     # USED
     def _extract_md_table(self, markdown_snippet: Text) -> List[Dict[str, Any]]:
         '''
@@ -60,7 +60,7 @@ class MarkdownExtractor:
 
         if table_lines:
             return self.__parse_table(table_lines)
-        
+
         return []
 
     # USED
@@ -72,7 +72,7 @@ class MarkdownExtractor:
         def is_list_item(line: str):
             """Check if a line is a list item (unordered or ordered)."""
             return bool(re.match(r'(\s*)[-+*] ', line)) or bool(re.match(r'(\s*)\d+[.)] ', line))
-        
+
         def get_list_item_marker(line: str):
             """Extract the indentation and marker type (unordered or ordered)."""
             unordered_match = re.match(r'(\s*)([-+*]) ', line)
@@ -87,7 +87,7 @@ class MarkdownExtractor:
             """Recursively parse list items and their nesting."""
             result = []
             list_type = None
-            
+
             while index < len(lines):
                 line = lines[index]
                 if is_list_item(line):
@@ -97,7 +97,7 @@ class MarkdownExtractor:
                     # Set list type for the first detected list item
                     if list_type is None:
                         list_type = current_list_type
-                    
+
                     # If the current line is less or equally indented than the parent, stop nesting
                     if indent <= current_indent:
                         return result, index
@@ -129,7 +129,7 @@ class MarkdownExtractor:
         index = 0
         while index < len(lines):
             line = lines[index]
-            
+
             if is_list_item(line):
                 parsed_list, _ = parse_list(lines, index, -1)
                 _, list_type = get_list_item_marker(line)
@@ -149,23 +149,23 @@ class MarkdownExtractor:
         pattern = r'^\s*```\s*([^"\n]+)?\s*\n(.*?)^\s*```$'
 
         pattern = re.compile(pattern, re.MULTILINE | re.DOTALL)
-        
+
         match = pattern.search(markdown_snippet)
-        
+
         if match:
             language = match.group(1).strip() if match.group(1) else None
             content = match.group(2).rstrip()
-            
+
             # Check if the language is actually part of the content
             if language and language.startswith('#'):
                 language = None
                 content = f"{match.group(1)}\n{content}"
-            
+
             return {
                 "language": language.lower() if language else None,
                 "content": content
             }
-        
+
         return {}
 
     # USED
@@ -193,7 +193,7 @@ class MarkdownExtractor:
         for line in blockquote_lines:
             level = len(line) - len(line.lstrip('>'))  # Count the number of '>' characters
             content = line.strip().lstrip('>').strip()  # Remove '>' and surrounding whitespace
-            
+
             if content:  # Ignore empty lines
                 # Create nested lists based on the level
                 nested_list = [content]
@@ -203,95 +203,10 @@ class MarkdownExtractor:
 
         return result_list
 
-
-    # NOT USED
-    """def _extract_md_metadata(self, markdown_snippet: Text) -> Dict[str, Any]:
-        '''
-        Extracts a markdown metadata block out of the given markdown text snippet.
-        The first appearing markdown metadata block is extracted while others are ignored.
-        '''
-        # Improved regex pattern to handle leading/trailing whitespace
-        metadata_pattern = r'^\s*---\s*([\s\S]+?)\s*---\s*'
-        match = re.search(metadata_pattern, markdown_snippet)
-        
-        if match:
-            metadata_content = match.group(1)
-            try:
-                metadata_dict = yaml.safe_load(metadata_content)
-                if not isinstance(metadata_dict, dict):
-                    raise ValueError("Metadata is not a valid dictionary.")
-                
-                for key in metadata_dict:
-                    if isinstance(metadata_dict[key], datetime.date):
-                        value: datetime.date = metadata_dict[key]
-                        metadata_dict[key] = value.strftime("%Y-%m-%d")
-                return metadata_dict
-            except yaml.YAMLError as e:
-                raise ValueError(f"Error parsing metadata: {e}")
-        return {}"""
-    
-    '''# NOT USED
-    def _extract_md_def_list(self, markdown_snippet: Text) -> Dict[str, Any]:
-        """
-        Extracts the first appearing coherent markdown definition list out of the given markdown text snippet.
-        """
-        lines = markdown_snippet.splitlines()
-        definition_list = {}
-        term = None
-        items = []
-
-        for line in lines:
-            stripped_line = line.strip()
-
-            # If the line is a term (doesn't start with a colon)
-            if stripped_line and not stripped_line.startswith(": "):
-                if term:  # If we already found a term, stop after extracting one definition list
-                    break
-                term = stripped_line  # Assign the term
-            elif stripped_line.startswith(": "):
-                if term:  # If a term was previously found, add the definition
-                    definition = stripped_line[2:].strip()  # Extract definition after ": "
-                    items.append(definition)
-
-        if term and items:  # Return only if both term and definitions are found
-            definition_list = {"term": term, "list": items}
-
-        return definition_list'''
-
-    # works as well
-    """
-    def _extract_md_def_list(self, markdown_snippet: str) -> Dict[str, Any]:
-        '''
-        Extracts a markdown definition list out of the given markdown text snippet.
-        The first appearing coherent markdown definition list is extracted while others are ignored.
-        
-        Args:
-            markdown_snippet (str): A markdown text snippet potentially containing a definition list.
-        
-        Returns:
-            Dict[str, Any]: A dictionary representing the extracted definition list.
-        '''
-        lines = markdown_snippet.split('\n')
-        result = {}
-        
-        for i, line in enumerate(lines):
-            # Check if the line is a potential term (non-empty and doesn't start with ': ')
-            if line.strip() and not line.lstrip().startswith(':'):
-                term = line.strip()
-                
-                # Collect definitions until we find a non-definition line
-                definitions = []
-                j = i + 1
-                while j < len(lines) and lines[j].lstrip().startswith(':'):
-                    definition = lines[j].lstrip()[2:].strip()  # Remove ': ' prefix
-                    definitions.append(definition)
-                    j += 1
-                
-                # If we found definitions, create the result dictionary
-                if definitions:
-                    result["term"] = term
-                    result["list"] = definitions
-                    break
-        
-        return result
-    """
+    def _extract_metadata_kv(self, line: str) -> tuple[str | None , str | None]:
+        """Extract key-value pairs from metadata lines."""
+        if match := re.match(r'^([^:]+):\s*(.*)?$', line):
+            key = match.group(1).strip()
+            value = match.group(2).strip() if match.group(2) else None
+            return key, value
+        return None, None

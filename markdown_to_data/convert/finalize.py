@@ -9,7 +9,7 @@ from .joining_and_extraction.join import (
     join_blockquote_lines_properly,
     delete_empty_paragraphs
 )
-from .hierarchy.hierarchy import build_hierarchy_for_list, build_hierarchy_for_dict
+from .hierarchy.hierarchy import build_hierarchy_for_dict
 
 
 #########################

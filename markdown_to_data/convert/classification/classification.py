@@ -4,7 +4,7 @@ import re
 from .metadata.metadata import reset_metdata # if metadata was wrongly assigned
 from .code.code import set_line_keys_to_code # set all keys of lines between ``` and ``` to 'code'
 
-   
+
 def md_line_classification(markdown: Text) -> List[Dict[str, Any]]:
     '''
     This function detects different kind of building blocks from markdown, extracts them and store them into a tuple.
@@ -31,7 +31,7 @@ def md_line_classification(markdown: Text) -> List[Dict[str, Any]]:
                 # Extract the level and the header text
                 level = len(match.group(1))
                 header_text = match.group(2)
-                
+
                 # Ensure the level doesn't exceed 6 (maximum header level in Markdown)
                 level = min(level, 6)
                 line = {f'h{level}': header_text}
@@ -115,7 +115,7 @@ def md_line_classification(markdown: Text) -> List[Dict[str, Any]]:
                 index_of_line += 1
 
         # METADATA or PARAGRAPH
-        elif re.match(r'^[^:\s]+:\s*.*$', stripped_line):
+        elif re.match(r'^([^:]+):\s*(.*)?$', stripped_line):
             if in_metadata is True and metadata is False and index_of_line != -1:
                 line = {'metadata': line}
                 classified_list.append(line)

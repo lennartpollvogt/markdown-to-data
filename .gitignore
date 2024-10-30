@@ -164,5 +164,5 @@ cython_debug/
 
 example.py
 
-#test.py
+test.py
 test_test.py
