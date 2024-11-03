@@ -13,24 +13,24 @@ This project is still work in progress and early state. The functionality is lim
 - [x] Extract specific building blocks (e.g., only tables or lists)
 - [ ] Provide comprehensive documentation
 - [ ] Add Pydantic integration for data validation
-- [ ] Add more test coverage
+- [x] Add more test coverage --> 50 test cases
 - [ ] Publish on PyPI
 
 
 **Table of content**:
-- [Quick overview](#Quick%20Overview)
-  - [Installation](#Installation)
-  - [Basic Usage](#Basic%20Usage)
-- [Supported Markdown Elements](#Supported%20Markdown%20Elements)
-    - [Metadata](#Metadata%20(YAML%20frontmatter))
-    - [Headers](#Headers%20(h1-h6))
-    - [Lists](#Lists%20(ordered%20and%20unordered%20with%20nesting))
-    - [Tables](#Tables)
-    - [Code blocks](#Code%20blocks%20(with%20language%20detection))
-    - [Definition lists](#Definition%20lists)
+- [Quick overview](#quick-overview)
+  - [Installation](#installation)
+  - [Basic Usage](#basic-usage)
+- [Supported Markdown Elements](#supported-markdown-elements)
+    - [Metadata](#metadata-yaml-frontmatter)
+    - [Headers](#headers-h1-h6)
+    - [Lists](#lists-ordered-and-unordered-with-nesting)
+    - [Tables](#tables)
+    - [Code blocks](#code-blocks-with-language-detection)
+    - [Definition lists](#definition-lists)
     - [Blockquotes](#blockquotes)
-    - [Paragraphs](#Paragraphs)
-- [Why?](#Why%20markdown-to-data?)
+    - [Paragraphs](#paragraphs)
+- [Why?](#why-markdown-to-data)
 
 ## Quick Overview
 
