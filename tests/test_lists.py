@@ -1,5 +1,6 @@
 import pytest
 from markdown_to_data.convert.joining_and_extraction.extraction import MarkdownExtractor
+from markdown_to_data.markdown_to_data import Markdown
 
 # pytest test_lists.py
 
@@ -151,3 +152,112 @@ It contains some text, but no lists.
     expected = {}
 
     assert result == expected, f"Expected {expected}, but got {result}"
+
+
+def test_markdown_class_with_list():
+    input_text = '''
+- item 1
+- item 2
+    - subitem 1
+    - subitem 2
+- item 3
+'''
+
+    expected_output_list = [
+        {
+            'list' : {
+                'type': 'ul',
+                'list': [
+                    ['item 1'],
+                    ['item 2', [['subitem 1'], ['subitem 2']]],
+                    ['item 3']
+                ]
+            }
+        }
+    ]
+    expected_output_dict = {
+        'list' : {
+            'type': 'ul',
+            'list': [
+                ['item 1'],
+                ['item 2', [['subitem 1'], ['subitem 2']]],
+                ['item 3']
+            ]
+        }
+    }
+
+    markdown = Markdown(input_text)
+    assert markdown.md_list == expected_output_list
+    assert markdown.md_dict == expected_output_dict
+
+
+def test_markdown_class_with_multiple_lists():
+    input_text = '''
+- item 1
+- item 2
+    - subitem 1
+    - subitem 2
+- item 3
+
+- item 1
+
+1. item 1
+2. item 2
+'''
+
+    expected_output_list = [
+        {
+            'list' : {
+                'type': 'ul',
+                'list': [
+                    ['item 1'],
+                    ['item 2', [['subitem 1'], ['subitem 2']]],
+                    ['item 3']
+                ]
+            }
+        },
+        {
+            'list': {
+                'type': 'ul',
+                'list': [
+                    ['item 1']
+                ]
+            }
+        },
+        {
+            'list': {
+                'type': 'ol',
+                'list': [
+                    ['item 1'],
+                    ['item 2']
+                ]
+            }
+        }
+    ]
+    expected_output_dict = {
+        'list': {
+            'type': 'ul',
+            'list': [
+                ['item 1'],
+                ['item 2', [['subitem 1'], ['subitem 2']]],
+                ['item 3']
+            ]
+        },
+        'list2': {
+            'type': 'ul',
+            'list': [
+                ['item 1']
+            ]
+        },
+        'list3': {
+            'type': 'ol',
+            'list': [
+                ['item 1'],
+                ['item 2']
+            ]
+        }
+    }
+
+    markdown = Markdown(input_text)
+    assert markdown.md_list == expected_output_list
+    assert markdown.md_dict == expected_output_dict

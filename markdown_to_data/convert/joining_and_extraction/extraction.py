@@ -89,10 +89,15 @@ class MarkdownExtractor:
             list_type = None
 
             while index < len(lines):
-                line = lines[index]
+                line = lines[index].rstrip()
+
+                # Stop if we encounter an empty line
+                if not line:
+                    break
+
                 if is_list_item(line):
                     indent, current_list_type = get_list_item_marker(line)
-                    content = line.strip().split(' ', 1)[1]  # Get content after the marker
+                    content = line.strip().split(' ', 1)[1]
 
                     # Set list type for the first detected list item
                     if list_type is None:
@@ -116,10 +121,8 @@ class MarkdownExtractor:
                         result.append([content])
                     index = next_index
                 else:
-                    # Stop if we encounter a non-list item (e.g., a paragraph or empty line)
-                    if line.strip() == "" or not is_list_item(line):
-                        break
-                    index += 1
+                    break
+
             return result, index
 
         # Split the markdown into lines
@@ -128,12 +131,18 @@ class MarkdownExtractor:
         # Extract the first coherent list
         index = 0
         while index < len(lines):
-            line = lines[index]
+            line = lines[index].rstrip()
+
+            # Skip empty lines at the start
+            if not line:
+                index += 1
+                continue
 
             if is_list_item(line):
                 parsed_list, _ = parse_list(lines, index, -1)
                 _, list_type = get_list_item_marker(line)
                 return {"type": list_type, "list": parsed_list}
+
             index += 1
 
         return {}
@@ -145,24 +154,50 @@ class MarkdownExtractor:
         Extracts a markdown code block out of the given markdown text snippet.
         The first appearing markdown code block is extracted while others are ignored.
         '''
-        # Regular expression to match code blocks
-        pattern = r'^\s*```\s*([^"\n]+)?\s*\n(.*?)^\s*```$'
+        lines = markdown_snippet.splitlines()
+        in_code_block = False
+        code_block_lines = []
+        potential_language = None
+        code_block_found = False
 
-        pattern = re.compile(pattern, re.MULTILINE | re.DOTALL)
+        for line in lines:
+            stripped_line = line.strip()
+            if stripped_line.startswith('```'):
+                if not in_code_block:
+                    # Start of code block
+                    in_code_block = True
+                    code_block_found = True
+                    # Get potential language identifier
+                    potential_language = stripped_line[3:].strip()
+                    continue
+                else:
+                    # End of code block
+                    break
+            if in_code_block:
+                code_block_lines.append(line)
 
-        match = pattern.search(markdown_snippet)
+        if code_block_found:  # Changed from if code_block_lines
+            # Process the content
+            # Find common indentation
+            non_empty_lines = [line for line in code_block_lines if line.strip()]
+            if non_empty_lines:
+                min_indent = min(len(line) - len(line.lstrip()) for line in non_empty_lines)
+                # Remove common indentation
+                content = '\n'.join(line[min_indent:] if line.strip() else ''
+                                  for line in code_block_lines).strip()
+            else:
+                content = ''
 
-        if match:
-            language = match.group(1).strip() if match.group(1) else None
-            content = match.group(2).rstrip()
-
-            # Check if the language is actually part of the content
-            if language and language.startswith('#'):
+            # Validate language identifier
+            if potential_language and re.match(r'^[a-zA-Z0-9+-]+$', potential_language):
+                language = potential_language.lower()
+            else:
                 language = None
-                content = f"{match.group(1)}\n{content}"
+                if potential_language:
+                    content = f"{potential_language}\n{content}"
 
             return {
-                "language": language.lower() if language else None,
+                "language": language,
                 "content": content
             }
 

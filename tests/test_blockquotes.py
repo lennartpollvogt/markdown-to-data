@@ -1,5 +1,7 @@
+from re import M
 import pytest
 from markdown_to_data.convert.joining_and_extraction.extraction import MarkdownExtractor
+from markdown_to_data.markdown_to_data import Markdown
 
 # pytest test_blockquotes.py
 
@@ -107,3 +109,72 @@ def test_nested_blockquote_with_empty_lines_(mapper):
         [[["Deeply nested quote"]]]
     ]
     assert mapper._extract_md_blockquote(input_text) == expected_output
+
+def test_markdown_class_with_blockquote():
+    input_text = '''
+> a nested blockquote
+> with multiline
+>> the nested part
+> last line of the blockquote
+'''
+
+    expected_output_list = [
+        {
+            'blockquote': [
+                ['a nested blockquote'],
+                ['with multiline'],
+                [['the nested part']],
+                ['last line of the blockquote']
+            ]
+        }
+    ]
+    expected_output_dict = {
+        'blockquote': [
+            ['a nested blockquote'],
+            ['with multiline'],
+            [['the nested part']],
+            ['last line of the blockquote']
+        ]
+    }
+
+    markdown = Markdown(input_text)
+    assert markdown.md_list == expected_output_list
+    assert markdown.md_dict == expected_output_dict
+
+
+def test_markdown_class_with_multiple_blockquotes():
+    input_text = '''
+> a single blockquote
+
+> a nested blockquote
+> with multiline
+>> the nested part
+> last line of the blockquote
+'''
+
+    expected_output_list = [
+        {
+            'blockquote': [['a single blockquote']]
+        },
+        {
+            'blockquote': [
+                ['a nested blockquote'],
+                ['with multiline'],
+                [['the nested part']],
+                ['last line of the blockquote']
+            ]
+        }
+    ]
+    expected_output_dict = {
+        'blockquote': [['a single blockquote']],
+        'blockquote2': [
+            ['a nested blockquote'],
+            ['with multiline'],
+            [['the nested part']],
+            ['last line of the blockquote']
+        ]
+    }
+
+    markdown = Markdown(input_text)
+    assert markdown.md_list == expected_output_list
+    assert markdown.md_dict == expected_output_dict

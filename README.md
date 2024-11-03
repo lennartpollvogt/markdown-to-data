@@ -18,16 +18,19 @@ This project is still work in progress and early state. The functionality is lim
 
 
 **Table of content**:
-- [Quick overview](#quick-overview)
-- [Why?](#why)
-- [Processable markdown building blocks](#processable-markdown-building-blocks)
-    - [Metadata](#metadata)
-    - [Headers](#headers)
-    - [Lists](#lists)
-    - [Tables](#tables)
-    - [Code blocks](#code-blocks)
-    - [Definition lists](#definition-lists)
+- [Quick overview](#Quick%20Overview)
+  - [Installation](#Installation)
+  - [Basic Usage](#Basic%20Usage)
+- [Supported Markdown Elements](#Supported%20Markdown%20Elements)
+    - [Metadata](#Metadata%20(YAML%20frontmatter))
+    - [Headers](#Headers%20(h1-h6))
+    - [Lists](#Lists%20(ordered%20and%20unordered%20with%20nesting))
+    - [Tables](#Tables)
+    - [Code blocks](#Code%20blocks%20(with%20language%20detection))
+    - [Definition lists](#Definition%20lists)
     - [Blockquotes](#blockquotes)
+    - [Paragraphs](#Paragraphs)
+- [Why?](#Why%20markdown-to-data?)
 
 ## Quick Overview
 
@@ -114,14 +117,349 @@ print(md.get_md_building_blocks(blocks=['table']))
 ```
 
 ## Supported Markdown Elements
-- Metadata (YAML frontmatter)
-- Headers (h1-h6)
-- Lists (ordered and unordered with nesting)
-- Tables
-- Code blocks (with language detection)
-- Definition lists
-- Blockquotes
-- Paragraphs
+
+### Metadata (YAML frontmatter)
+
+```python
+metadata = '''
+---
+title: Document
+author: John Doe
+date: 2023-12-20
+---
+'''
+
+md_metadata = Markdown(metadata)
+print(md_metadata.md_list)
+print(md_metadata.md_dict)
+```
+
+**`md_list'**
+```
+[
+    {
+        'metadata': {
+            'title': 'Document',
+            'author': 'John Doe',
+            'date': '2023-12-20'
+        }
+    }
+]
+```
+
+**'md_dict`**
+```
+{'metadata': {'title': 'Document', 'author': 'John Doe', 'date': '2023-12-20'}}
+```
+
+### Headers (h1-h6)
+
+```python
+headers = '''
+# Heading level 1
+
+## Heading level 2
+
+## Heading level 2
+
+### Heading level 3
+
+# Heading level 1 again
+'''
+
+md_headers = Markdown(headers)
+print(md_headers.md_list)
+print(md_headers.md_dict)
+```
+
+**`md_list'**
+```
+[
+    {'h1': 'Heading level 1'},
+    {'h2': 'Heading level 2'},
+    {'h2': 'Heading level 2'},
+    {'h3': 'Heading level 3'},
+    {'h1': 'Heading level 1 again'}
+]
+```
+
+**'md_dict`**
+```
+{
+    'Heading level 1': {'Heading level 2': {'Heading level 3': {}}},
+    'Heading level 1 again': {}
+}
+```
+
+### Lists (ordered and unordered with nesting)
+
+```python
+lists = '''
+- item 1
+- item 2
+    - subitem 1
+    - subitem 2
+- item 3
+
+1. item 1
+2. item 2
+3. item 3
+'''
+
+md_lists = Markdown(lists)
+print(md_lists.md_list)
+print(md_lists.md_dict)
+```
+
+**`md_list'**
+```
+[
+    {
+        'list': {
+            'type': 'ul',
+            'list': [
+                ['item 1'],
+                ['item 2', [['subitem 1'], ['subitem 2']]],
+                ['item 3']
+            ]
+        }
+    },
+    {'list': {'type': 'ol', 'list': [['item 1'], ['item 2'], ['item 3']]}}
+]
+```
+
+**'md_dict`**
+```
+{
+    'list': {
+        'type': 'ul',
+        'list': [
+            ['item 1'],
+            ['item 2', [['subitem 1'], ['subitem 2']]],
+            ['item 3']
+        ]
+    },
+    'list2': {'type': 'ol', 'list': [['item 1'], ['item 2'], ['item 3']]}
+}
+```
+
+### Tables
+
+```python
+tables = '''
+| Column 1 | Column 2 |
+|----------|----------|
+| Cell 1   | Cell 2   |
+
+| Column 1 | Column 2 |
+|----------|----------|
+| Cell 1   | Cell 2   |
+'''
+
+md_tables = Markdown(tables)
+print(md_tables.md_list)
+print(md_tables.md_dict)
+```
+
+**`md_list'**
+```
+[
+    {'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]},
+    {'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]}
+]
+```
+
+**'md_dict`**
+```
+{
+    'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}],
+    'table2': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]
+}
+```
+
+### Code blocks (with language detection)
+
+```python
+code = '''
+´´´
+{
+    'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}],
+    'table2': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]
+}
+´´´
+
+´´´python
+def hello():
+    print('Hello World!')
+´´´
+'''
+
+md_code = Markdown(code)
+print(md_code.md_list)
+print(md_code.md_dict)
+```
+
+**`md_list'**
+```
+[
+    {
+        'code': {
+            'language': '{',
+            'content': "    'table': [{'Column 1': 'Cell 1', 'Column 2':
+'Cell 2'}],\n    'table2': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]\n}"
+        }
+    },
+    {
+        'code': {
+            'language': 'python',
+            'content': "def hello():\n    print('Hello World!')"
+        }
+    }
+]
+```
+
+**'md_dict`**
+```
+{
+    'code': {
+        'language': '{',
+        'content': "    'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell
+2'}],\n    'table2': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]\n}"
+    },
+    'code2': {
+        'language': 'python',
+        'content': "def hello():\n    print('Hello World!')"
+    }
+}
+```
+
+### Definition lists
+
+```python
+def_lists = '''
+term 1
+: definition 1
+: definition 2
+
+term 2
+: definition 1
+: definition 2
+'''
+
+md_def_lists = Markdown(def_lists)
+print(md_def_lists.md_list)
+print(md_def_lists.md_dict)
+```
+
+**`md_list'**
+```
+[
+    {
+        'def_list': {
+            'term': 'term 1',
+            'list': ['definition 1', 'definition 2']
+        }
+    },
+    {
+        'def_list': {
+            'term': 'term 2',
+            'list': ['definition 1', 'definition 2']
+        }
+    }
+]
+```
+
+**'md_dict`**
+```
+{
+    'def_list': {
+        'term': 'term 1',
+        'list': ['definition 1', 'definition 2']
+    },
+    'def_list2': {
+        'term': 'term 2',
+        'list': ['definition 1', 'definition 2']
+    }
+}
+```
+
+### Blockquotes
+
+```python
+blockquotes = '''
+> a single line blockquote
+
+> a nested blockquote
+> with multiline
+>> the nested part
+> last line of the blockquote
+'''
+
+md_blockquotes = Markdown(blockquotes)
+print(md_blockquotes.md_list)
+print(md_blockquotes.md_dict)
+```
+
+**`md_list'**
+```
+[
+    {'blockquote': [['a single line blockquote']]},
+    {
+        'blockquote': [
+            ['a nested blockquote'],
+            ['with multiline'],
+            [['the nested part']],
+            ['last line of the blockquote']
+        ]
+    }
+]
+```
+
+**'md_dict`**
+```
+{
+    'blockquote': [['a single line blockquote']],
+    'blockquote2': [
+        ['a nested blockquote'],
+        ['with multiline'],
+        [['the nested part']],
+        ['last line of the blockquote']
+    ]
+}
+```
+
+### Paragraphs
+
+```python
+paragraphs = '''
+A paragraph
+a second paragraph
+
+a paragraph after a empty row
+'''
+
+md_paragraphs = Markdown(paragraphs)
+rich.print(md_paragraphs.md_list)
+rich.print(md_paragraphs.md_dict)
+```
+
+**`md_list'**
+```
+[
+    {'paragraph': 'A paragraph'},
+    {'paragraph': 'a second paragraph'},
+    {'paragraph': 'a paragraph after a empty row'}
+]
+```
+
+**'md_dict`**
+```
+{
+    'paragraph': 'A paragraph',
+    'paragraph2': 'a second paragraph',
+    'paragraph3': 'a paragraph after a empty row'
+}
+```
 
 ## Why markdown-to-data?
 This library focuses on converting markdown into structured data formats that are easy to process programmatically. It's particularly useful for:

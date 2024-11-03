@@ -159,7 +159,9 @@ def md_line_classification(markdown: Text) -> List[Dict[str, Any]]:
                 classified_list.append(line) #
                 index_of_line += 1
             elif stripped_line.strip() == '':
-                continue
+                line = {'paragraph': line}
+                classified_list.append(line) #
+                index_of_line += 1
             else:
                 line = {'paragraph': line}
                 classified_list.append(line) #

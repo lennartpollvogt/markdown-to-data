@@ -7,7 +7,7 @@ from markdown_to_data.convert.joining_and_extraction.extraction import MarkdownE
 def md_converter():
     return MarkdownExtractor()
 
-def test_extract_code_block_without_language(md_converter):
+def test_extract_code_block_without_language_1(md_converter):
     markdown = """
 Some text before the code block
 
@@ -22,7 +22,24 @@ Some text after the code block
 """
     expected_result = {
         "language": None,
-        "content": "# Codeblock with leading text, but inside the code block\ndef example_func():\n    return print(\"Hello world\")"
+        "content": "# Codeblock with leading text, but inside the code block\n\ndef example_func():\n    return print(\"Hello world\")"
+    }
+    assert md_converter._extract_md_code(markdown) == expected_result
+
+def test_extract_code_block_without_language_2(md_converter):
+    markdown = """
+Some text before the code block
+
+```
+def example_func():
+    return print("Hello world")
+```
+
+Some text after the code block
+"""
+    expected_result = {
+        "language": None,
+        "content": "def example_func():\n    return print(\"Hello world\")"
     }
     assert md_converter._extract_md_code(markdown) == expected_result
 
@@ -97,7 +114,7 @@ def test_empty_code_block(md_converter):
 """
     expected_result = {
         "language": None,
-        "content": ""
+        "content": ''
     }
     assert md_converter._extract_md_code(markdown) == expected_result
 
