@@ -1,5 +1,5 @@
 import pytest
-from markdown_to_data.convert.joining_and_extraction.extraction import MarkdownExtractor
+from markdown_to_data.to_data.joining_and_extraction.extraction import MarkdownExtractor
 from markdown_to_data.markdown_to_data import Markdown
 
 # pytest test_lists.py

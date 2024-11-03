@@ -1,8 +1,8 @@
 from typing import List, Dict, Any, Literal
 import json
 
-from .convert.classification.classification import md_line_classification
-from .convert.finalize import final_md_data_as_list, final_md_data_as_dict
+from .to_data.classification.classification import md_line_classification
+from .to_data.finalize import final_md_data_as_list, final_md_data_as_dict
 
 
 class Markdown:
@@ -11,6 +11,7 @@ class Markdown:
         self._classified_lines = None
         self._md_list = None
         self._md_dict = None
+        self._md_elements = None
 
     @property
     def classified_lines(self):
@@ -30,7 +31,14 @@ class Markdown:
             self._md_dict = final_md_data_as_dict(self.classified_lines)
         return self._md_dict
 
-
+    @property
+    def md_elements(self):
+        if self._md_elements is None:
+            if self._md_list is None:
+                self._md_elements = list(set(key for item in self.md_list for key in item.keys()))
+            else:
+                self._md_elements = list(set(key for item in self._md_list for key in item.keys()))
+        return self._md_elements
 
     def md_to_json(self, indent: int | str | None =None): # TODO: necessary?
         '''

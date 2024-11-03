@@ -30,6 +30,7 @@ This project is still work in progress and early state. The functionality is lim
     - [Definition lists](#definition-lists)
     - [Blockquotes](#blockquotes)
     - [Paragraphs](#paragraphs)
+    - [Separator](#separator)
 - [Why?](#why-markdown-to-data)
 
 ## Quick Overview
@@ -119,6 +120,8 @@ print(md.get_md_building_blocks(blocks=['table']))
 ## Supported Markdown Elements
 
 ### Metadata (YAML frontmatter)
+
+A metadata block can only appear once in the markdown file and must be at the beginning.
 
 ```python
 metadata = '''
@@ -458,6 +461,34 @@ rich.print(md_paragraphs.md_dict)
     'paragraph': 'A paragraph',
     'paragraph2': 'a second paragraph',
     'paragraph3': 'a paragraph after a empty row'
+}
+```
+
+### Separator
+
+As described in the example for [Metadata](#metadata) a metadata block must appear at the very beginning of a markdown file. Later in the file a combination of three `-` (=`---`) will be classified as a separator.
+
+```python
+separator = '''
+---
+'''
+
+md_separator = Markdown(separator)
+print(md_separator.md_list)
+print(md_separator.md_dict)
+```
+
+**`md_list'**
+```
+[
+    {'separator': '---'}
+]
+```
+
+**'md_dict`**
+```
+{
+    'separator': '---'
 }
 ```
 
