@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Text
+from typing import List, Dict, Any, Text, Tuple
 import re
 
 
@@ -83,7 +83,7 @@ class MarkdownExtractor:
                 return len(ordered_match.group(1)), 'ol'
             return 0, None
 
-        def parse_list(lines: List[str], index: int, current_indent: int) -> List[Any]:
+        def parse_list(lines: List[str], index: int, current_indent: int) -> Tuple[List[Any], int]:
             """Recursively parse list items and their nesting."""
             result = []
             list_type = None
@@ -204,7 +204,7 @@ class MarkdownExtractor:
         return {}
 
     # USED
-    def _extract_md_blockquote(self, markdown_text: Text) -> List[List[Text]]:
+    def _extract_md_blockquote(self, markdown_text: Text) -> List[List[Text] | Any]:
         '''
         Extracts the first appearing coherent markdown blockquote out of the given markdown text snippet.
         '''
@@ -224,7 +224,7 @@ class MarkdownExtractor:
                 break
 
         # Step 3: Process the blockquote lines
-        result_list: List[Text] = []
+        result_list: List[List[Text] | Any] = []
         for line in blockquote_lines:
             level = len(line) - len(line.lstrip('>'))  # Count the number of '>' characters
             content = line.strip().lstrip('>').strip()  # Remove '>' and surrounding whitespace
