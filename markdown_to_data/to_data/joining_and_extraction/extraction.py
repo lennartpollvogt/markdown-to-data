@@ -262,8 +262,14 @@ class MarkdownExtractor:
         return key, self._process_metadata_value(value)
 
     def _process_metadata_value(self, value: str) -> Any:
-        """Process metadata value to handle different list formats, quoted values, and numbers."""
-        # First try to convert single value to number if possible
+        """Process metadata value to handle different list formats, quoted values, numbers, and booleans."""
+        # Handle boolean values first
+        if value.lower() == 'true':
+            return True
+        if value.lower() == 'false':
+            return False
+
+        # Then try to convert single value to number if possible
         if not any(char in value for char in '[]()"\''):
             numeric_value = self._try_convert_to_number(value)
             if numeric_value is not None:

@@ -185,6 +185,7 @@ tags: [python, testing]
 contributors: (John Doe, Jane Smith)
 keywords: markdown, parser, data
 version: 1.0.0
+boolean: True
 ---
 
 # Content
@@ -195,7 +196,8 @@ version: 1.0.0
         'tags': ['python', 'testing'],
         'contributors': ['John Doe', 'Jane Smith'],
         'keywords': ['markdown', 'parser', 'data'],
-        'version': '1.0.0'
+        'version': '1.0.0',
+        'boolean': True
     }
     assert md.md_dict['metadata'] == expected
 

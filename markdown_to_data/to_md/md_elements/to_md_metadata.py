@@ -2,22 +2,22 @@ from typing import Dict, Any, Text, List, Union
 
 def format_metadata_value(value: Any) -> str:
     """Format different types of metadata values."""
-    if isinstance(value, (int, float, bool)):
+    if isinstance(value, bool):
+        return str(value)  # Will return 'True' or 'False'
+    elif isinstance(value, (int, float)):
         return str(value)
     elif isinstance(value, list):
         if all(isinstance(x, (int, float)) for x in value):
-            # For lists of numbers
             return str(value)
         elif all(isinstance(x, str) for x in value):
-            # For lists of strings, keep original format
-            if len(value) == 1:
-                return f"['{value[0]}']"
-            return str(value)
-        # For mixed types
+            # For lists of strings, join without quotes
+            return f"[{', '.join(value)}]"
         return str(value)
     elif isinstance(value, str):
-        if value.startswith('http'):
-            return value  # Don't quote URLs
+        # String that looks like 'true' or 'false' should stay lowercase
+        if value.lower() in ('true', 'false'):
+            return value.lower()
+        # Otherwise return the string as is, without quotes
         return value
     return str(value)
 
