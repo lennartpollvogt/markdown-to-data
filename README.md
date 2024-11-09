@@ -106,6 +106,23 @@ print(md.get_md_building_blocks(blocks=['table']))
 }
 ```
 
+#### JSON (`md.to_json(indent=4)`)
+
+Converts the `md_dict` to a JSON string. By applying `ìndent` you can specify the indents for the output.
+
+```
+{
+    'metadata': {'title': 'Example text', 'author': 'John Doe'},
+    'Main Header': {
+        'list': {'type': 'ul', 'list': [['Item 1'], ['Item 2', [['Subitem 1']]]]},
+        'Table Example': {
+            'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]
+        }
+    }
+}
+```
+
+
 #### Building blocks (`md.get_md_building_blocks(blocks=['table'])`)
 ```python
 [
