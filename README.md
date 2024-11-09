@@ -76,6 +76,9 @@ print(md.md_list)
 print(md.md_dict)
 # Headers are used as keys for nesting content
 
+# Get the nested dictionary as a JSON string
+print(md.to_json(indent=4))
+
 # Extract specific building blocks
 print(md.get_md_building_blocks(blocks=['table']))
 ```
