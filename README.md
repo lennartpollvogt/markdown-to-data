@@ -215,6 +215,51 @@ Output:
 
 ```
 
+#### `to_md_parser` function
+
+**Note**: you can use the function `to_md_parser` to parse a list of dictionaries of markdown elements to markdown.
+
+```python
+from markdown_to_data import to_md_parser
+
+example = [
+    {
+        'metadata': {
+            'title': 'Test Document',
+            'date': '2024-01-01'
+        }
+    },
+    {'h1': 'Main Title'},
+    {'paragraph': 'Sample paragraph'},
+    {'h2': 'Subtitle'},
+    {'list': {
+        'type': 'ul',
+        'list': [['Item 1'], ['Item 2']]
+    }}
+]
+
+markdown_string = to_md_parser(data=example, spacer=1)
+
+print(markdown_string)
+```
+
+Output:
+```
+---
+title: Test Document
+date: 2024-01-01
+---
+
+# Main Title
+
+Sample paragraph
+
+## Subtitle
+
+- Item 1
+- Item 2
+```
+
 ## Supported Markdown Elements
 
 ### Metadata (YAML frontmatter)
