@@ -7,9 +7,11 @@ This project is still work in progress and early state. The functionality is lim
 ## Status
 - [x] Detect, extract and convert markdown building blocks into Python data structures
 - [x] Provide two formats for parsed markdown:
-  - List format: Each building block as separate dictionary in a list
-  - Dictionary format: Nested structure using headers as keys
+  - [x] List format: Each building block as separate dictionary in a list
+  - [x] Dictionary format: Nested structure using headers as keys
 - [x] Convert parsed markdown to JSON
+- [x] Parse markdown data back to markdown formatted string
+  - [x] add options which data gets parsed back to markdown
 - [x] Extract specific building blocks (e.g., only tables or lists)
 - [ ] Provide comprehensive documentation
 - [ ] Add Pydantic integration for data validation

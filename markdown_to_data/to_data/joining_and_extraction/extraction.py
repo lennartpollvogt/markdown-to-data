@@ -7,7 +7,9 @@ class MarkdownExtractor:
     This class contains the functions to map a markdown based on its buildig blocks and return the final markdown data within a dicitonary.
     '''
     # TODO: Improve to detect additional top header rows
+
     # USED
+    # TABLES
     def __parse_table(self, table_lines: List[Text]) -> List[Dict[str, Any]]:
         headers = []
         rows = []
@@ -64,6 +66,7 @@ class MarkdownExtractor:
         return []
 
     # USED
+    # LISTS
     def _extract_md_list(self, markdown_snippet: Text) -> Dict[str, Any]:
         '''
         Extracts a markdown list out of the given markdown text snippet.
@@ -149,6 +152,7 @@ class MarkdownExtractor:
 
 
     # USED
+    # CODE
     def _extract_md_code(self, markdown_snippet: str) -> Dict[str, Any]:
         '''
         Extracts a markdown code block out of the given markdown text snippet.
@@ -204,6 +208,7 @@ class MarkdownExtractor:
         return {}
 
     # USED
+    # BLOCKQUOTES
     def _extract_md_blockquote(self, markdown_text: Text) -> List[List[Text] | Any]:
         '''
         Extracts the first appearing coherent markdown blockquote out of the given markdown text snippet.
@@ -238,10 +243,116 @@ class MarkdownExtractor:
 
         return result_list
 
-    def _extract_metadata_kv(self, line: str) -> tuple[str | None , str | None]:
-        """Extract key-value pairs from metadata lines."""
-        if match := re.match(r'^([^:]+):\s*(.*)?$', line):
-            key = match.group(1).strip()
-            value = match.group(2).strip() if match.group(2) else None
+    # METADATA
+    def _extract_metadata_kv(self, line: str) -> tuple[str | None, Any]:
+        """Extract and process key-value pairs from metadata lines."""
+        if not (match := re.match(r'^([^:]+):\s*(.*)?$', line)):
+            return None, None
+
+        # Process the key: replace multiple spaces with single underscore
+        key = match.group(1).strip()
+        key = re.sub(r'\s+', '_', key)
+
+        value = match.group(2).strip() if match.group(2) else None
+
+        if not value:
             return key, value
-        return None, None
+
+        # Process the value based on its format
+        return key, self._process_metadata_value(value)
+
+    def _process_metadata_value(self, value: str) -> Any:
+        """Process metadata value to handle different list formats, quoted values, and numbers."""
+        # First try to convert single value to number if possible
+        if not any(char in value for char in '[]()"\''):
+            numeric_value = self._try_convert_to_number(value)
+            if numeric_value is not None:
+                return numeric_value
+
+        # Check for bracketed or parentheses lists
+        list_match = re.match(r'^\s*[\[\(](.*?)[\]\)]\s*$', value)
+
+        if list_match:
+            # Process content within brackets/parentheses
+            return self._split_and_convert_numbers(list_match.group(1))
+
+        # Check if the value contains commas and isn't entirely quoted
+        if ',' in value and not (
+            (value.startswith('"') and value.endswith('"')) or
+            (value.startswith("'") and value.endswith("'"))
+        ):
+            return self._split_and_convert_numbers(value)
+
+        # Remove outer quotes if present
+        if (value.startswith('"') and value.endswith('"')) or \
+           (value.startswith("'") and value.endswith("'")):
+            return value[1:-1]
+
+        return value
+
+    def _try_convert_to_number(self, value: str) -> Any:
+        """Try to convert a string to int or float."""
+        # Remove any whitespace
+        value = value.strip()
+
+        try:
+            # First try converting to int
+            if value.isdigit():
+                return int(value)
+            # Then try converting to float
+            if '.' in value:
+                return float(value)
+        except ValueError:
+            pass
+        return None
+
+    def _split_and_convert_numbers(self, value: str) -> List[Any]:
+        """Split a string by commas and convert numeric values."""
+        items = self._split_considering_quotes(value)
+        converted_items = []
+
+        for item in items:
+            # Try converting each item to a number
+            numeric_value = self._try_convert_to_number(item)
+            if numeric_value is not None:
+                converted_items.append(numeric_value)
+            else:
+                # If conversion fails, use the original string
+                converted_items.append(item)
+
+        return converted_items
+
+    def _split_considering_quotes(self, value: str) -> List[str]:
+        """Split a string by commas while respecting quoted values."""
+        result = []
+        current = []
+        in_quotes = False
+        quote_char = None
+
+        for char in value:
+            if char in '"\'':
+                if not in_quotes:
+                    in_quotes = True
+                    quote_char = char
+                elif char == quote_char:
+                    in_quotes = False
+                    quote_char = None
+                current.append(char)
+            elif char == ',' and not in_quotes:
+                if current:
+                    result.append(''.join(current).strip())
+                    current = []
+            else:
+                current.append(char)
+
+        if current:
+            result.append(''.join(current).strip())
+
+        # Process each item to remove unnecessary quotes
+        return [
+            item[1:-1] if (
+                (item.startswith('"') and item.endswith('"')) or
+                (item.startswith("'") and item.endswith("'"))
+            ) else item
+            for item in result
+        ]
