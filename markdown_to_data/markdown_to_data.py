@@ -43,7 +43,7 @@ class Markdown:
                 self._md_elements = list(set(key for item in self._md_list for key in item.keys()))
         return self._md_elements
 
-    def to_md(self, data: List[Dict[str, Any]], include: List[MDElements] = ['all'], exclude: List[MDElements] | None = None, spacer: int = 1) -> Text:
+    def to_md(self, include: List[MDElements] = ['all'], exclude: List[MDElements] | None = None, spacer: int = 1) -> Text:
         '''
         Parse the markdown data back to markdown formatted string.
 
@@ -66,7 +66,7 @@ class Markdown:
         0 spacer means not empty lines.
         2 spacer means 2 empty lines.
         '''
-        return to_md_parser(data=data, include=include, exclude=exclude, spacer=spacer)
+        return to_md_parser(data=self.md_list, include=include, exclude=exclude, spacer=spacer)
 
     def to_json(self, indent: int | str | None =None): # TODO: necessary?
         '''

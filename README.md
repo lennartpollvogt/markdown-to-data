@@ -119,6 +119,101 @@ print(md.get_md_building_blocks(blocks=['table']))
 ]
 ```
 
+### Parse back to markdown (`to_md`)
+
+The `Markdown` class comes as well with a method to parse the data of markdown elements back to markdown formatted strings.
+The method is called `to_md` and comes with some arguments to manipulate the outcome.
+
+```python
+from markdown_to_data import Markdown
+
+markdown = """
+---
+title: Example text
+author: John Doe
+---
+
+# Main Header
+
+- Item 1
+- Item 2
+    - Subitem 1
+
+## Table Example
+| Column 1 | Column 2 |
+|----------|----------|
+| Cell 1   | Cell 2   |
+"""
+
+md = Markdown(markdown)
+```
+
+**Example 1**: include all and exclude nothing
+```python
+print(md.to_md(
+    include=['h1', 'list', 'table'], # A list of markdown elements that will by included
+    exclude=None, # the default value; no markdown element will be excluded by this argument
+    spacer=1 # the default value; defines how many empty lines will be added after each markdown element
+))
+```
+
+Output:
+```
+# Main Header
+
+- Item 1
+- Item 2
+  - Subitem 1
+
+| Column 1 | Column 2 |
+|----------|----------|
+| Cell 1   | Cell 2   |
+```
+
+**Example 2**: `exclude` overwrites `include` and two `spacer`s
+```python
+print(md.to_md(
+    include=['all'], # the default value; will include all markdown elements
+    exclude=['h2'], # will overwrite `include` and exclude h2 headers
+    spacer=2 # adds two empty line after each markdown elements which gets parsed
+))
+```
+
+Output:
+```
+---
+title: Example text
+author: John Doe
+---
+
+
+# Main Header
+
+
+- Item 1
+- Item 2
+  - Subitem 1
+
+
+| Column 1 | Column 2 |
+|----------|----------|
+| Cell 1   | Cell 2   |
+```
+
+**Example 3**: `exclude` = `['all']` excludes everything and returns an empty line
+```python
+print(md.to_md(
+    include=['h1', 'list', 'table'],
+    exclude=['all'], # will overwrite the `include``and exclude all markdown elements
+    spacer=1
+))
+```
+
+Output:
+```
+
+```
+
 ## Supported Markdown Elements
 
 ### Metadata (YAML frontmatter)
