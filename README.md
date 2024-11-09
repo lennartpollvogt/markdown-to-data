@@ -23,6 +23,7 @@ This project is still work in progress and early state. The functionality is lim
 - [Quick overview](#quick-overview)
   - [Installation](#installation)
   - [Basic Usage](#basic-usage)
+  - [Parse back to markdown](#parse-back-to-markdown-to_md)
 - [Supported Markdown Elements](#supported-markdown-elements)
     - [Metadata](#metadata-yaml-frontmatter)
     - [Headers](#headers-h1-h6)
