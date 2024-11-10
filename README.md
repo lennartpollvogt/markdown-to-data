@@ -1,5 +1,5 @@
 # markdown-to-data
-Convert markdown and its building blocks (tables, lists, code, etc.) into structured and easy processable data (Python list or dictionary)
+Convert markdown and its elements (tables, lists, code, etc.) into structured, easily processable data formats like lists and hierarchical dictionaries (or JSON), with support for parsing back to markdown.
 
 [WIP]
 This project is still work in progress and early state. The functionality is limited (see Status).
