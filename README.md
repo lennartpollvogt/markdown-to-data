@@ -569,13 +569,16 @@ print(md_blockquotes.md_dict)
 **`md_list'**
 ```
 [
-    {'blockquote': [['a single line blockquote']]},
+    {'blockquote': ['a single line blockquote']},
     {
         'blockquote': [
-            ['a nested blockquote'],
-            ['with multiline'],
-            [['the nested part']],
-            ['last line of the blockquote']
+            'a nested blockquote',
+            {
+                'with multiline': [
+                    'the nested part'
+                ]
+            },
+            'last line of the blockquote'
         ]
     }
 ]
@@ -584,12 +587,15 @@ print(md_blockquotes.md_dict)
 **'md_dict`**
 ```
 {
-    'blockquote': [['a single line blockquote']],
+    'blockquote': ['a single line blockquote'],
     'blockquote2': [
-        ['a nested blockquote'],
-        ['with multiline'],
-        [['the nested part']],
-        ['last line of the blockquote']
+        'a nested blockquote',
+        {
+            'with multiline': [
+                'the nested part'
+            ]
+        },
+        'last line of the blockquote'
     ]
 }
 ```

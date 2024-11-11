@@ -17,7 +17,7 @@ def test_markdown_conversion_and_parsing():
         {'h2': 'Subtitle'},
         {'list': {
             'type': 'ul',
-            'list': [['Item 1'], ['Item 2']]
+            'list': ['Item 1', 'Item 2']
         }}
     ]
 

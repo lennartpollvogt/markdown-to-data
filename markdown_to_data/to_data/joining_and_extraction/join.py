@@ -250,7 +250,7 @@ def join_blockquote_lines_properly(classified_list: List[Dict[str, Any]]) -> Lis
         else:
             if in_blockquote:
                 #result.append({'blockquote': '\n'.join(temp_blockquote_content)})
-                result.append({'blockquote': extractor._extract_md_blockquote(markdown_text='\n'.join(temp_blockquote_content))})
+                result.append(extractor._extract_md_blockquote(markdown_text='\n'.join(temp_blockquote_content)))
                 temp_blockquote_content = []
                 in_blockquote = False
             result.append(item)
@@ -258,11 +258,10 @@ def join_blockquote_lines_properly(classified_list: List[Dict[str, Any]]) -> Lis
     # Handle the case where the list ends with a blockquote
     if in_blockquote:
         #result.append({'blockquote': '\n'.join(temp_blockquote_content)})
-        result.append({'blockquote': extractor._extract_md_blockquote(markdown_text='\n'.join(temp_blockquote_content))})
+        result.append(extractor._extract_md_blockquote(markdown_text='\n'.join(temp_blockquote_content)))
 
     return result
 
-from typing import List, Dict, Any
 
 def delete_empty_paragraphs(classified_list: List[Dict[str, str]]) -> List[Dict[str, str | Any]]:
     '''

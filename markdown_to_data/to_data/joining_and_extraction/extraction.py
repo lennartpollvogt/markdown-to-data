@@ -68,87 +68,71 @@ class MarkdownExtractor:
     # USED
     # LISTS
     def _extract_md_list(self, markdown_snippet: Text) -> Dict[str, Any]:
-        '''
-        Extracts a markdown list out of the given markdown text snippet.
-        The first appearing coherent markdown list is extracted while others are ignored.
-        '''
-        def is_list_item(line: str):
-            """Check if a line is a list item (unordered or ordered)."""
-            return bool(re.match(r'(\s*)[-+*] ', line)) or bool(re.match(r'(\s*)\d+[.)] ', line))
+        def get_indent_level(line: Text) -> int:
+            return (len(line) - len(line.lstrip())) // 2
 
-        def get_list_item_marker(line: str):
-            """Extract the indentation and marker type (unordered or ordered)."""
-            unordered_match = re.match(r'(\s*)([-+*]) ', line)
-            ordered_match = re.match(r'(\s*)(\d+[.)]) ', line)
-            if unordered_match:
-                return len(unordered_match.group(1)), 'ul'
-            elif ordered_match:
-                return len(ordered_match.group(1)), 'ol'
-            return 0, None
+        def get_list_type(line: Text) -> Tuple[str, str]:
+            line = line.lstrip()
+            if re.match(r'^\d+[.)] ', line):
+                return 'ol', line.split(' ', 1)[1]
+            elif re.match(r'^[-+*] ', line):
+                return 'ul', line.split(' ', 1)[1]
+            return '', ''
 
-        def parse_list(lines: List[str], index: int, current_indent: int) -> Tuple[List[Any], int]:
-            """Recursively parse list items and their nesting."""
+        def parse_lines(lines: List[Tuple[Text, int, str]], current_indent: int = -1) -> List[Any]:
             result = []
-            list_type = None
+            i = 0
+            while i < len(lines):
+                current_line, indent, content = lines[i]
 
-            while index < len(lines):
-                line = lines[index].rstrip()
-
-                # Stop if we encounter an empty line
-                if not line:
+                if indent <= current_indent:
                     break
 
-                if is_list_item(line):
-                    indent, current_list_type = get_list_item_marker(line)
-                    content = line.strip().split(' ', 1)[1]
+                children = []
+                j = i + 1
+                while j < len(lines) and lines[j][1] > indent:
+                    j += 1
 
-                    # Set list type for the first detected list item
-                    if list_type is None:
-                        list_type = current_list_type
-
-                    # If the current line is less or equally indented than the parent, stop nesting
-                    if indent <= current_indent:
-                        return result, index
-
-                    # Check for nested lists
-                    next_index = index + 1
-                    nested_list = []
-                    if next_index < len(lines):
-                        next_indent, _ = get_list_item_marker(lines[next_index])
-                        if is_list_item(lines[next_index]) and next_indent > indent:
-                            nested_list, next_index = parse_list(lines, next_index, indent)
-
-                    if nested_list:
-                        result.append([content, nested_list])
-                    else:
-                        result.append([content])
-                    index = next_index
+                if j > i + 1:
+                    child_items = parse_lines(lines[i+1:j], indent)
+                    result.append({content: child_items})
                 else:
-                    break
+                    result.append(content)
 
-            return result, index
+                i = j if j > i + 1 else i + 1
 
-        # Split the markdown into lines
-        lines = markdown_snippet.splitlines()
+            return result
 
-        # Extract the first coherent list
-        index = 0
-        while index < len(lines):
-            line = lines[index].rstrip()
+        # Process input text
+        lines = markdown_snippet.strip().split('\n')
+        processed_lines = []
+        list_type = None
+        empty_line_encountered = False
 
-            # Skip empty lines at the start
-            if not line:
-                index += 1
+        # Collect valid list items with their properties, stop at first empty line
+        for line in lines:
+            if not line.strip():
+                if processed_lines:  # Only set flag if we've already found list items
+                    empty_line_encountered = True
                 continue
 
-            if is_list_item(line):
-                parsed_list, _ = parse_list(lines, index, -1)
-                _, list_type = get_list_item_marker(line)
-                return {"type": list_type, "list": parsed_list}
+            current_type, content = get_list_type(line.strip())
+            if current_type:
+                if empty_line_encountered:
+                    # If we've seen an empty line and already have items, stop processing
+                    break
+                if not list_type:
+                    list_type = current_type
+                indent = get_indent_level(line)
+                processed_lines.append((line, indent, content))
 
-            index += 1
+        if not processed_lines:
+            return {}
 
-        return {}
+        return {
+            'type': list_type,
+            'list': parse_lines(processed_lines)
+        }
 
 
     # USED
@@ -209,39 +193,72 @@ class MarkdownExtractor:
 
     # USED
     # BLOCKQUOTES
-    def _extract_md_blockquote(self, markdown_text: Text) -> List[List[Text] | Any]:
+    def _extract_md_blockquote(self, markdown_text: Text) -> Dict[str, List[Any]]:
         '''
         Extracts the first appearing coherent markdown blockquote out of the given markdown text snippet.
+        Returns a dictionary with nested structure representing blockquote hierarchy.
         '''
-        # Step 1: Split all lines of the markdown and store each line into a list
-        lines: List[Text] = markdown_text.split('\n')
+        def parse_lines(lines: List[Tuple[int, str]], current_level: int = 1) -> List[Any]:
+            result = []
+            i = 0
+            while i < len(lines):
+                level, content = lines[i]
 
-        # Step 2: Extract only the first coherent blockquote and delete everything else from the list
-        blockquote_lines: List[Text] = []
-        in_blockquote: bool = False
+                # Skip if this line belongs to a higher level
+                if level < current_level:
+                    break
+
+                # Look ahead for children (higher levels)
+                children = []
+                j = i + 1
+                while j < len(lines) and lines[j][0] > level:
+                    children.append(lines[j])
+                    j += 1
+
+                if children:
+                    # We have children, create nested structure
+                    if len(children) == 1:
+                        # Single child
+                        result.append({content: [children[0][1]]})
+                    else:
+                        # Multiple children or deeper nesting
+                        child_items = parse_lines(children, level + 1)
+                        result.append({content: child_items})
+                else:
+                    # No children, add as simple string
+                    result.append(content)
+
+                i = j if children else i + 1
+
+            return result
+
+        # Process input text
+        lines = markdown_text.split('\n')
+        processed_lines = []
+        in_blockquote = False
+
+        # Collect blockquote lines with their levels
         for line in lines:
-            stripped_line: Text = line.strip()
+            stripped_line = line.strip()
             if stripped_line.startswith('>'):
                 in_blockquote = True
-                if stripped_line != '>':  # Ignore empty blockquote lines
-                    blockquote_lines.append(stripped_line)
+                # Count the number of '>' characters for level
+                level = len(stripped_line) - len(stripped_line.lstrip('>'))
+                # Extract content after '>' characters
+                content = stripped_line.lstrip('>').strip()
+
+                if content:  # Ignore empty blockquote lines
+                    processed_lines.append((level, content))
             elif in_blockquote:
+                # Stop at first non-blockquote line after blockquote started
                 break
 
-        # Step 3: Process the blockquote lines
-        result_list: List[List[Text] | Any] = []
-        for line in blockquote_lines:
-            level = len(line) - len(line.lstrip('>'))  # Count the number of '>' characters
-            content = line.strip().lstrip('>').strip()  # Remove '>' and surrounding whitespace
+        if not processed_lines:
+            return {}
 
-            if content:  # Ignore empty lines
-                # Create nested lists based on the level
-                nested_list = [content]
-                for _ in range(level - 1):
-                    nested_list = [nested_list]
-                result_list.append(nested_list)
-
-        return result_list
+        return {
+            'blockquote': parse_lines(processed_lines)
+        }
 
     # METADATA
     def _extract_metadata_kv(self, line: str) -> tuple[str | None, Any]:

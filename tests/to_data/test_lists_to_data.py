@@ -2,8 +2,6 @@ import pytest
 from markdown_to_data.to_data.joining_and_extraction.extraction import MarkdownExtractor
 from markdown_to_data.markdown_to_data import Markdown
 
-# pytest test_lists.py
-
 @pytest.fixture
 def mapper():
     """Fixture to initialize the MarkdownMapper instance."""
@@ -19,11 +17,7 @@ def test_extract_md_list_unordered(mapper):
     result = mapper._extract_md_list(markdown_with_list)
     expected = {
         "type": "ul",
-        "list": [
-            ["Item 1"],
-            ["Item 2"],
-            ["Item 3"]
-        ]
+        "list": ["Item 1", "Item 2", "Item 3"]
     }
 
     assert result == expected, f"Expected {expected}, but got {result}"
@@ -42,11 +36,7 @@ def test_extract_md_list_unordered_from_two(mapper):
     result = mapper._extract_md_list(markdown_with_list)
     expected = {
         "type": "ul",
-        "list": [
-            ["Item 1"],
-            ["Item 2"],
-            ["Item 3"]
-        ]
+        "list": ["Item 1", "Item 2", "Item 3"]
     }
 
     assert result == expected, f"Expected {expected}, but got {result}"
@@ -61,11 +51,7 @@ def test_extract_md_list_ordered(mapper):
     result = mapper._extract_md_list(markdown_with_list)
     expected = {
         "type": "ol",
-        "list": [
-            ["First item"],
-            ["Second item"],
-            ["Third item"]
-        ]
+        "list": ["First item", "Second item", "Third item"]
     }
 
     assert result == expected, f"Expected {expected}, but got {result}"
@@ -83,9 +69,9 @@ def test_extract_md_list_nested_unordered(mapper):
     expected = {
         "type": "ul",
         "list": [
-            ["Item 1"],
-            ["Item 2", [["Nested Item 1"], ["Nested Item 2"]]],
-            ["Item 3"]
+            "Item 1",
+            {"Item 2": ["Nested Item 1", "Nested Item 2"]},
+            "Item 3"
         ]
     }
 
@@ -104,9 +90,9 @@ def test_extract_md_list_nested_ordered(mapper):
     expected = {
         "type": "ol",
         "list": [
-            ["First item"],
-            ["Second item", [["Nested first"], ["Nested second"]]],
-            ["Third item"]
+            "First item",
+            {"Second item": ["Nested first", "Nested second"]},
+            "Third item"
         ]
     }
 
@@ -125,9 +111,9 @@ def test_extract_md_list_mixed_unordered(mapper):
     expected = {
         "type": "ul",
         "list": [
-            ["First unordered item"],
-            ["Second unordered item", [["Nested ordered 1"], ["Nested ordered 2"]]],
-            ["Third unordered item"]
+            "First unordered item",
+            {"Second unordered item": ["Nested ordered 1", "Nested ordered 2"]},
+            "Third unordered item"
         ]
     }
 
@@ -153,7 +139,6 @@ It contains some text, but no lists.
 
     assert result == expected, f"Expected {expected}, but got {result}"
 
-
 def test_markdown_class_with_list():
     input_text = '''
 - item 1
@@ -165,23 +150,23 @@ def test_markdown_class_with_list():
 
     expected_output_list = [
         {
-            'list' : {
+            'list': {
                 'type': 'ul',
                 'list': [
-                    ['item 1'],
-                    ['item 2', [['subitem 1'], ['subitem 2']]],
-                    ['item 3']
+                    "item 1",
+                    {"item 2": ["subitem 1", "subitem 2"]},
+                    "item 3"
                 ]
             }
         }
     ]
     expected_output_dict = {
-        'list' : {
+        'list': {
             'type': 'ul',
             'list': [
-                ['item 1'],
-                ['item 2', [['subitem 1'], ['subitem 2']]],
-                ['item 3']
+                "item 1",
+                {"item 2": ["subitem 1", "subitem 2"]},
+                "item 3"
             ]
         }
     }
@@ -189,7 +174,6 @@ def test_markdown_class_with_list():
     markdown = Markdown(input_text)
     assert markdown.md_list == expected_output_list
     assert markdown.md_dict == expected_output_dict
-
 
 def test_markdown_class_with_multiple_lists():
     input_text = '''
@@ -207,30 +191,25 @@ def test_markdown_class_with_multiple_lists():
 
     expected_output_list = [
         {
-            'list' : {
+            'list': {
                 'type': 'ul',
                 'list': [
-                    ['item 1'],
-                    ['item 2', [['subitem 1'], ['subitem 2']]],
-                    ['item 3']
+                    "item 1",
+                    {"item 2": ["subitem 1", "subitem 2"]},
+                    "item 3"
                 ]
             }
         },
         {
             'list': {
                 'type': 'ul',
-                'list': [
-                    ['item 1']
-                ]
+                'list': ["item 1"]
             }
         },
         {
             'list': {
                 'type': 'ol',
-                'list': [
-                    ['item 1'],
-                    ['item 2']
-                ]
+                'list': ["item 1", "item 2"]
             }
         }
     ]
@@ -238,23 +217,18 @@ def test_markdown_class_with_multiple_lists():
         'list': {
             'type': 'ul',
             'list': [
-                ['item 1'],
-                ['item 2', [['subitem 1'], ['subitem 2']]],
-                ['item 3']
+                "item 1",
+                {"item 2": ["subitem 1", "subitem 2"]},
+                "item 3"
             ]
         },
         'list2': {
             'type': 'ul',
-            'list': [
-                ['item 1']
-            ]
+            'list': ["item 1"]
         },
         'list3': {
             'type': 'ol',
-            'list': [
-                ['item 1'],
-                ['item 2']
-            ]
+            'list': ["item 1", "item 2"]
         }
     }
 

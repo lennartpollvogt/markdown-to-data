@@ -5,9 +5,9 @@ def test_ordered_list():
     data = {
         'type': 'ol',
         'list': [
-            ['Item 1'],
-            ['Item 2', [['Subitem 1'], ['Subitem 2']]],
-            ['Item 3']
+            'Item 1',
+            {'Item 2': ['Subitem 1', 'Subitem 2']},
+            'Item 3'
         ]
     }
     expected = (
@@ -23,9 +23,9 @@ def test_unordered_list():
     data = {
         'type': 'ul',
         'list': [
-            ['Item 1'],
-            ['Item 2'],
-            ['Item 3', [['Subitem 1'], ['Subitem 2']]]
+            'Item 1',
+            'Item 2',
+            {'Item 3': ['Subitem 1', 'Subitem 2']}
         ]
     }
     expected = (
@@ -52,12 +52,16 @@ def test_deeply_nested_list():
     data = {
         'type': 'ul',
         'list': [
-            ['Item 1', [
-                ['Subitem 1', [
-                    ['Sub-subitem 1'],
-                    ['Sub-subitem 2']
-                ]]
-            ]]
+            {
+                'Item 1': [
+                    {
+                        'Subitem 1': [
+                            'Sub-subitem 1',
+                            'Sub-subitem 2'
+                        ]
+                    }
+                ]
+            }
         ]
     }
     expected = (
@@ -72,13 +76,17 @@ def test_mixed_nested_lists():
     data = {
         'type': 'ol',
         'list': [
-            ['Item 1'],
-            ['Item 2', [
-                ['Subitem 1'],
-                ['Subitem 2', [
-                    ['Sub-subitem 1']
-                ]]
-            ]]
+            'Item 1',
+            {
+                'Item 2': [
+                    'Subitem 1',
+                    {
+                        'Subitem 2': [
+                            'Sub-subitem 1'
+                        ]
+                    }
+                ]
+            }
         ]
     }
     expected = (

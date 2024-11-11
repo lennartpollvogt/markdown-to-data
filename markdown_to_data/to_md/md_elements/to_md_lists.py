@@ -1,29 +1,29 @@
-from typing import Dict, Any, Text, List, Tuple
+from typing import Dict, Any, Text, List, Union
 
-def process_list_items(items: List[Any], list_type: str, indent_level: int = 0) -> List[str]:
+def process_list_items(items: List[Union[str, Dict]], list_type: str, indent_level: int = 0) -> List[str]:
     """Process list items recursively and return formatted strings."""
     result = []
     for index, item in enumerate(items, 1):
-        # Handle the main item
         indent = "  " * indent_level
         marker = f"{index}." if list_type == 'ol' else "-"
 
-        if isinstance(item, list):
-            main_text = item[0]
-            # Add the main item
-            result.append(f"{indent}{marker} {main_text}")
+        if isinstance(item, dict):
+            # Get the parent item text (key) and its children (value)
+            parent_text = next(iter(item))  # Get the only key
+            children = item[parent_text]    # Get its value (list of children)
 
-            # Handle nested lists if they exist
-            if len(item) > 1 and isinstance(item[1], list):
-                nested_items = item[1]
-                # Recursively process nested items
-                nested_results = process_list_items(
-                    nested_items,
-                    list_type,
-                    indent_level + 1
-                )
-                result.extend(nested_results)
+            # Add the parent item
+            result.append(f"{indent}{marker} {parent_text}")
+
+            # Recursively process children
+            nested_results = process_list_items(
+                children,
+                list_type,
+                indent_level + 1
+            )
+            result.extend(nested_results)
         else:
+            # Handle simple string items
             result.append(f"{indent}{marker} {item}")
 
     return result

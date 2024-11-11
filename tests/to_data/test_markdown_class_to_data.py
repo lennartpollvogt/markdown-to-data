@@ -63,17 +63,17 @@ def test_lists():
         {
             'list': {
                 'type': 'ul',
-                'list': [['item 1'], ['item 2', [['subitem 1'], ['subitem 2']]], ['item 3']]
+                'list': ['item 1', {'item 2': ['subitem 1', 'subitem 2']}, 'item 3']
             }
         },
-        {'list': {'type': 'ol', 'list': [['item 1'], ['item 2'], ['item 3']]}}
+        {'list': {'type': 'ol', 'list': ['item 1', 'item 2', 'item 3']}}
     ]
     expected_dict = {
         'list': {
             'type': 'ul',
-            'list': [['item 1'], ['item 2', [['subitem 1'], ['subitem 2']]], ['item 3']]
+            'list': ['item 1', {'item 2': ['subitem 1', 'subitem 2']}, 'item 3']
         },
-        'list2': {'type': 'ol', 'list': [['item 1'], ['item 2'], ['item 3']]}
+        'list2': {'type': 'ol', 'list': ['item 1', 'item 2', 'item 3']}
     }
 
     assert md.md_list == expected_list
@@ -176,23 +176,29 @@ def test_blockquotes():
 '''
     md = Markdown(blockquotes)
     expected_list = [
-        {'blockquote': [['a single line blockquote']]},
+        {'blockquote': ['a single line blockquote']},
         {
             'blockquote': [
-                ['a nested blockquote'],
-                ['with multiline'],
-                [['the nested part']],
-                ['last line of the blockquote']
+                'a nested blockquote',
+                {
+                    'with multiline': [
+                        'the nested part'
+                    ]
+                },
+                'last line of the blockquote'
             ]
         }
     ]
     expected_dict = {
-        'blockquote': [['a single line blockquote']],
+        'blockquote': ['a single line blockquote'],
         'blockquote2': [
-            ['a nested blockquote'],
-            ['with multiline'],
-            [['the nested part']],
-            ['last line of the blockquote']
+            'a nested blockquote',
+            {
+                'with multiline': [
+                    'the nested part'
+                ]
+            },
+            'last line of the blockquote'
         ]
     }
 
