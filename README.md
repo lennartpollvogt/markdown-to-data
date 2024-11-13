@@ -93,7 +93,12 @@ print(md.get_md_building_blocks(blocks=['table']))
 [
     {'metadata': {'title': 'Example text', 'author': 'John Doe'}},
     {'h1': 'Main Header'},
-    {'list': {'type': 'ul', 'list': [['Item 1'], ['Item 2', [['Subitem 1']]]]}},
+    {
+        'list': {
+            'type': 'ul',
+            'list': ['Item 1', {'Item 2': ['Subitem 1']}]
+        }
+    },
     {'h2': 'Table Example'},
     {'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]}
 ]
@@ -104,7 +109,10 @@ print(md.get_md_building_blocks(blocks=['table']))
 {
     'metadata': {'title': 'Example text', 'author': 'John Doe'},
     'Main Header': {
-        'list': {'type': 'ul', 'list': [['Item 1'], ['Item 2', [['Subitem 1']]]]},
+        'list': {
+            'type': 'ul',
+            'list': ['Item 1', {'Item 2': ['Subitem 1']}]
+        },
         'Table Example': {
             'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]
         }
@@ -136,7 +144,10 @@ Converts the `md_dict` to a JSON string. By applying `ìndent` you can specify t
 {
     'metadata': {'title': 'Example text', 'author': 'John Doe'},
     'Main Header': {
-        'list': {'type': 'ul', 'list': [['Item 1'], ['Item 2', [['Subitem 1']]]]},
+        'list': {
+            'type': 'ul',
+            'list': ['Item 1', {'Item 2': ['Subitem 1']}]
+        },
         'Table Example': {
             'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]
         }
@@ -268,7 +279,7 @@ example = [
     {'h2': 'Subtitle'},
     {'list': {
         'type': 'ul',
-        'list': [['Item 1'], ['Item 2']]
+        'list': ['Item 1', 'Item 2']
     }}
 ]
 
@@ -398,13 +409,13 @@ print(md_lists.md_dict)
         'list': {
             'type': 'ul',
             'list': [
-                ['item 1'],
-                ['item 2', [['subitem 1'], ['subitem 2']]],
-                ['item 3']
+                'item 1',
+                {'item 2': ['subitem 1', 'subitem 2']},
+                'item 3'
             ]
         }
     },
-    {'list': {'type': 'ol', 'list': [['item 1'], ['item 2'], ['item 3']]}}
+    {'list': {'type': 'ol', 'list': ['item 1', 'item 2', 'item 3']}}
 ]
 ```
 
@@ -414,12 +425,12 @@ print(md_lists.md_dict)
     'list': {
         'type': 'ul',
         'list': [
-            ['item 1'],
-            ['item 2', [['subitem 1'], ['subitem 2']]],
-            ['item 3']
+            'item 1',
+            {'item 2': ['subitem 1', 'subitem 2']},
+            'item 3'
         ]
     },
-    'list2': {'type': 'ol', 'list': [['item 1'], ['item 2'], ['item 3']]}
+    'list2': {'type': 'ol', 'list': ['item 1', 'item 2', 'item 3']}
 }
 ```
 
@@ -587,11 +598,7 @@ print(md_blockquotes.md_dict)
     {
         'blockquote': [
             'a nested blockquote',
-            {
-                'with multiline': [
-                    'the nested part'
-                ]
-            },
+            {'with multiline': ['the nested part']},
             'last line of the blockquote'
         ]
     }
@@ -604,11 +611,7 @@ print(md_blockquotes.md_dict)
     'blockquote': ['a single line blockquote'],
     'blockquote2': [
         'a nested blockquote',
-        {
-            'with multiline': [
-                'the nested part'
-            ]
-        },
+        {'with multiline': ['the nested part']},
         'last line of the blockquote'
     ]
 }
