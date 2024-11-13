@@ -76,6 +76,9 @@ print(md.md_list)
 print(md.md_dict)
 # Headers are used as keys for nesting content
 
+# Get a list of markdown elements included in the markdown file, the number of their appearance, the position and types
+print(md.md_elements)
+
 # Get the nested dictionary as a JSON string
 print(md.to_json(indent=4))
 
@@ -108,6 +111,22 @@ print(md.get_md_building_blocks(blocks=['table']))
     }
 }
 ```
+
+#### MD Elements (`md.md_elements`)
+
+Get information about all markdown elements in the markdown file.
+The output is based on `md_list` and can be used for navigate through `md_list`
+
+```python
+{
+    'metadata': {'count': 1, 'positions': [0], 'variants': set()},
+    'h1': {'count': 1, 'positions': [1], 'variants': set()},
+    'list': {'count': 1, 'positions': [2], 'variants': {'ul'}},
+    'h2': {'count': 1, 'positions': [3], 'variants': set()},
+    'table': {'count': 1, 'positions': [4], 'variants': set()}
+}
+```
+
 
 #### JSON (`md.to_json(indent=4)`)
 
@@ -172,8 +191,8 @@ md = Markdown(markdown)
 **Example 1**: include all and exclude nothing
 ```python
 print(md.to_md(
-    include=['h1', 'list', 'table'], # A list of markdown elements that will by included
-    exclude=None, # the default value; no markdown element will be excluded by this argument
+    include=['headers', 'list', 4], # A list of markdown elements that will by included (here: all headers, the list and the fifth elements)
+    exclude=[1], # the default value is None; markdown elements will be excluded based on the index in this argument;
     spacer=1 # the default value; defines how many empty lines will be added after each markdown element
 ))
 ```
@@ -195,7 +214,7 @@ Output:
 ```python
 print(md.to_md(
     include=['all'], # the default value; will include all markdown elements
-    exclude=['h2'], # will overwrite `include` and exclude h2 headers
+    exclude=['h2', 3], # will overwrite `include` and exclude h2 headers and the fourth element (here: the list)
     spacer=2 # adds two empty line after each markdown elements which gets parsed
 ))
 ```
@@ -209,11 +228,6 @@ author: John Doe
 
 
 # Main Header
-
-
-- Item 1
-- Item 2
-  - Subitem 1
 
 
 | Column 1 | Column 2 |

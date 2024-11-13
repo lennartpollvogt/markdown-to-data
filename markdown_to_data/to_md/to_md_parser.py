@@ -27,8 +27,8 @@ from .md_elements.to_md_separator import separator_data_to_md
 
 def to_md_parser(
     data: List[Dict[str, Any]],
-    include: List[MDElements] = ['all'],
-    exclude: List[MDElements] | None = None,
+    include: List[MDElements | int] = ['all'],
+    exclude: List[MDElements | int] | None = None,
     spacer: int = 1
 ) -> Text:
     """
@@ -36,25 +36,36 @@ def to_md_parser(
 
     Args:
         data: List of dictionaries containing markdown elements
-        include: Element types to include (default 'all')
-        exclude: Element types to exclude (overrides include if same values are listed)
+        include: Element types or indices to include (default 'all')
+        exclude: Element types or indices to exclude (overrides include if same values are listed)
         spacer: Number of empty lines between elements
 
     Returns:
         Formatted markdown string
 
-    If a list of markdown element types for `include` is provided, only those markdown element types will be parsed.
-    'all' means, all the markdown elements will be parsed. This is the default.
+    Examples:
+        # Include specific elements and indices
+        to_md_parser(data, include=['h1', 'table', 0, 10])
 
-    If a list of markdown element types for `exclude` is provided, those markdown element types will be excluded.
-    If the same markdown element type is provided in `include` and `exclude`, `exclude` is the dominant argument and the markdown element type will be excluded from the output.
+        # Exclude specific elements and indices
+        to_md_parser(data, exclude=['h2', 1])
 
-    The integer for spacer must be 0 or positive. It defines the namer of empty lines which will be added after each parsed markdown element.
-    0 spacer means not empty lines.
-    2 spacer means 2 empty lines.
+        # Combine both
+        to_md_parser(data, include=['h1', 'table', 0, 10], exclude=['h2', 1])
+
+    If a list of markdown element types or indices for `include` is provided,
+    only those will be parsed. 'all' means all elements will be parsed (default).
+
+    If a list of markdown element types or indices for `exclude` is provided,
+    those will be excluded. If the same type/index is in both include and exclude,
+    exclude takes precedence.
+
+    The spacer must be 0 or positive, defining empty lines between elements:
+    0 means no empty lines
+    2 means two empty lines
     """
     if not isinstance(data, list):
-            return ''
+        return ''
 
     # Early return if 'all' is in exclude
     if exclude and 'all' in exclude:
@@ -77,36 +88,40 @@ def to_md_parser(
     # Headers are handled specially due to multiple types
     header_types = list(get_args(HeaderTypes))
 
-    # Process include/exclude logic
-    excluded_elements = set()
-    if exclude:
-        excluded_elements = set(exclude)
-        if 'headers' in excluded_elements:
-            excluded_elements.update(header_types)
+    # Separate indices and element types for include/exclude
+    included_indices = {i for i in include if isinstance(i, int)} if 'all' not in include else set()
+    included_elements = {e for e in include if isinstance(e, str)}
 
-    included_elements = set()
-    if 'all' not in include:
-        included_elements = set(include)
-        if 'headers' in included_elements:
-            included_elements.update(header_types)
+    excluded_indices = {i for i in exclude if isinstance(i, int)} if exclude else set()
+    excluded_elements = {e for e in exclude if isinstance(e, str)} if exclude else set()
+
+    # Update excluded elements if 'headers' is in the set
+    if 'headers' in excluded_elements:
+        excluded_elements.update(header_types)
+
+    # Update included elements if 'headers' is in the set
+    if 'headers' in included_elements:
+        included_elements.update(header_types)
 
     # Process each item in the data list
     valid_elements = []
 
-    for item in data:
+    for idx, item in enumerate(data):
         if not item or not isinstance(item, dict):
             continue
 
         element_type, content = next(iter(item.items()))
 
-        # First check exclusions
-        if element_type in excluded_elements or \
-            (element_type in header_types and 'headers' in excluded_elements):
+        # First check exclusions (both by index and element type)
+        if idx in excluded_indices or \
+           element_type in excluded_elements or \
+           (element_type in header_types and 'headers' in excluded_elements):
             continue
 
         # Then check inclusions
         if 'all' not in include and not (
-            element_type in included_elements or \
+            idx in included_indices or
+            element_type in included_elements or
             (element_type in header_types and 'headers' in included_elements)
         ):
             continue

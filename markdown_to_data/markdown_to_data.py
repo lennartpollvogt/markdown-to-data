@@ -36,14 +36,62 @@ class Markdown:
 
     @property
     def md_elements(self):
+        '''
+        Get information about all markdown elements in the markdown file.
+        The output is based on `md_list` and can be used for navigate through `md_list`
+
+        Returns:
+            A dictionary containing information about each markdown element type:
+                - count: Number of occurrences of the element
+                - positions: List of indices where the element appears within the `md_list` object
+                - variants: Set of different types/formats for applicable elements
+                    - For lists: 'ul' (unordered) or 'ol' (ordered)
+                    - For code blocks: Programming language or None
+                    - Empty set() for elements without variants
+
+        Example:
+            {
+                'list': {
+                    'count': 3,
+                    'positions': [5, 10, 12],
+                    'variants': {'ul', 'ol'}
+                },
+                'code': {
+                    'count': 4,
+                    'positions': [2, 3, 21, 22],
+                    'variants': {'python', None}
+                },
+                'blockquote': {
+                    'count': 4,
+                    'positions': [17, 18, 27, 28],
+                    'variants': set()
+                }
+            }
+        '''
         if self._md_elements is None:
-            if self._md_list is None:
-                self._md_elements = list(set(key for item in self.md_list for key in item.keys()))
-            else:
-                self._md_elements = list(set(key for item in self._md_list for key in item.keys()))
+            elements_info = {}
+            for item in self.md_list:
+                for key in item.keys():
+                    if key not in elements_info:
+                        elements_info[key] = {
+                            'count': 0,
+                            'positions': [],
+                            'variants': set()
+                        }
+
+                    elements_info[key]['count'] += 1
+                    elements_info[key]['positions'].append(self.md_list.index(item))
+
+                    # Collect specific variants/types
+                    if key == 'list':
+                        elements_info[key]['variants'].add(item[key]['type'])  # 'ul' or 'ol'
+                    elif key == 'code':
+                        elements_info[key]['variants'].add(item[key]['language'])  # language type or None
+
+            self._md_elements = elements_info
         return self._md_elements
 
-    def to_md(self, include: List[MDElements] = ['all'], exclude: List[MDElements] | None = None, spacer: int = 1) -> Text:
+    def to_md(self, include: List[MDElements | int] = ['all'], exclude: List[MDElements | int] | None = None, spacer: int = 1) -> Text:
         '''
         Parse the markdown data back to markdown formatted string.
 
