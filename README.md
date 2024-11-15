@@ -123,7 +123,13 @@ print(md.get_md_building_blocks(blocks=['table']))
 #### MD Elements (`md.md_elements`)
 
 Get information about all markdown elements in the markdown file.
-The output is based on `md_list` and can be used for navigate through `md_list`
+The output is based on `md_list` and can be used for
+- Creating a table of contents based on headings
+- Finding specific elements by their positions in `md_list`
+- Jump to specific sections in `md_list`
+- Checking if required elements are present
+- Understanding the document's composition and complexity
+- Identifying patterns in document structure
 
 ```python
 {
