@@ -13,9 +13,8 @@ This project is still work in progress and early state. The functionality is lim
 - [x] Parse markdown data back to markdown formatted string
   - [x] add options which data gets parsed back to markdown
 - [x] Extract specific building blocks (e.g., only tables or lists)
-- [ ] Provide comprehensive documentation
-- [ ] Add Pydantic integration for data validation
-- [x] Add more test coverage --> 50 test cases
+- [x] Provide comprehensive documentation
+- [x] Add more test coverage --> 134 test cases
 - [ ] Publish on PyPI
 
 
