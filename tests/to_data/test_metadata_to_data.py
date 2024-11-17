@@ -1,5 +1,5 @@
 import pytest
-from markdown_to_data.markdown_to_data import Markdown
+from src.markdown_to_data.markdown_to_data import Markdown
 
 def test_simple_metadata():
     markdown = """---

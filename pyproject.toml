@@ -1,0 +1,44 @@
+[project]
+name = "markdown-to-data"
+version = "0.1.0"
+description = "Convert markdown and its elements (tables, lists, code, etc.) into structured, easily processable data formats like lists and hierarchical dictionaries (or JSON), with support for parsing back to markdown."
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Lennart Pollvogt", email = "lennartpollvogt@protonmail.com" },
+]
+requires-python = ">=3.8"
+keywords = [
+    "markdown",
+    "md",
+    "markdown-to-data",
+    "markdown-to-json",
+    "markdown-parser",
+    "parser",
+    "parsing",
+    "json",
+    "tables",
+    "lists",
+    "tables",
+]
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Developers",
+    "Topic :: Text Processing :: Markup :: Markdown",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.urls]
+Homepage = 'https://github.com/lennartpollvogt/markdown-to-data'
+Repository = 'https://github.com/lennartpollvogt/markdown-to-data'
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["pytest>=8.3.3", "rich>=13.9.4"]

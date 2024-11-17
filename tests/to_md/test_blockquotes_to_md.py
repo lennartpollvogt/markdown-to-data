@@ -1,5 +1,5 @@
 import pytest
-from markdown_to_data.to_md.md_elements.to_md_blockquotes import blockquote_data_to_md
+from src.markdown_to_data.to_md.md_elements.to_md_blockquotes import blockquote_data_to_md
 
 def test_simple_blockquote():
     data = {'blockquote': ['A simple blockquote']}

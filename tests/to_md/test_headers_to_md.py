@@ -1,5 +1,5 @@
 import pytest
-from markdown_to_data.to_md.md_elements.to_md_headers import header_data_to_md
+from src.markdown_to_data.to_md.md_elements.to_md_headers import header_data_to_md
 
 def test_h1_header():
     data = {'h1': 'Testing the capabilities of `markdown-to-data`'}

@@ -170,3 +170,6 @@ markdown_validator.py
 #to_md/
 yaml_file.yaml
 yaml_test.py
+
+uv.lock
+.python-version

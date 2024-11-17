@@ -1,6 +1,6 @@
 import pytest
-from markdown_to_data.to_data.joining_and_extraction.extraction import MarkdownExtractor
-from markdown_to_data.markdown_to_data import Markdown
+from src.markdown_to_data.to_data.joining_and_extraction.extraction import MarkdownExtractor
+from src.markdown_to_data.markdown_to_data import Markdown
 
 @pytest.fixture
 def mapper():

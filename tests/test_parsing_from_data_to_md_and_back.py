@@ -1,5 +1,5 @@
 import pytest
-from markdown_to_data import Markdown, to_md_parser
+from src.markdown_to_data import Markdown, to_md_parser
 
 # Test data as fixture for reuse
 @pytest.fixture
