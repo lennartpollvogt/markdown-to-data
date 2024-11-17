@@ -500,7 +500,7 @@ print(md_code.md_dict)
 [
     {
         'code': {
-            'language': '{',
+            'language': None,
             'content': "    'table': [{'Column 1': 'Cell 1', 'Column 2':
 'Cell 2'}],\n    'table2': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]\n}"
         }
