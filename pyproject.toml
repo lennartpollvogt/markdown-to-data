@@ -7,7 +7,7 @@ license = "MIT"
 authors = [
     { name = "Lennart Pollvogt", email = "lennartpollvogt@protonmail.com" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = [
     "markdown",
     "md",
