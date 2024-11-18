@@ -15,7 +15,7 @@ This project is still work in progress and early state. The functionality is lim
 - [x] Extract specific building blocks (e.g., only tables or lists)
 - [x] Provide comprehensive documentation
 - [x] Add more test coverage --> 134 test cases
-- [ ] Publish on PyPI
+- [x] Publish on PyPI
 
 
 **Table of content**:
@@ -38,7 +38,6 @@ This project is still work in progress and early state. The functionality is lim
 ## Quick Overview
 
 ### Installation
-(!NOT WORKING! CURRENTLY NOT ON PyPI!)
 ```bash
 pip install markdown-to-data
 ```
