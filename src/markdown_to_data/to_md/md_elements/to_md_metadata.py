@@ -1,4 +1,4 @@
-from typing import Dict, Any, Text, List, Union
+from typing import Dict, Any, Text
 
 def format_metadata_value(value: Any) -> str:
     """Format different types of metadata values."""

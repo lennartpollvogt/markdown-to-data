@@ -1,4 +1,4 @@
-from typing import Dict, Any, Text, List, Union
+from typing import Dict, Any, Text
 
 def definition_list_data_to_md(data: Dict[str, Any]) -> Text:
     """Convert definition list data to markdown format."""

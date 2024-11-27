@@ -88,7 +88,6 @@ class MarkdownExtractor:
                 if indent <= current_indent:
                     break
 
-                children = []
                 j = i + 1
                 while j < len(lines) and lines[j][1] > indent:
                     j += 1

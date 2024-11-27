@@ -12,7 +12,7 @@ space = lines between buildings blocks
 If `md_dict` is provided, and h1 is excluded, all children entries of the h1 dict are excluded as well.
 '''
 
-from typing import Literal, List, Dict, Text, Any, get_args
+from typing import List, Dict, Text, Any, get_args
 
 from .md_elements_list import MDElements, HeaderTypes
 from .md_elements.to_md_metadata import metadata_data_to_md
@@ -70,8 +70,6 @@ def to_md_parser(
     # Early return if 'all' is in exclude
     if exclude and 'all' in exclude:
         return ''
-
-    markdown_parts = []
 
     # Create mapping of element types to their parser functions
     parser_map = {
