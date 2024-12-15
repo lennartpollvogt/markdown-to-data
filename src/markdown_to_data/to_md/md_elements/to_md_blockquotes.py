@@ -1,37 +1,42 @@
-from typing import Dict, Any, Text, Union, List
+from typing import Dict, Any, Text, List, TypedDict
 
-def process_blockquote_item(item: Union[str, Dict], level: int = 1) -> List[str]:
+class BlockquoteItem(TypedDict):
+    content: str
+    items: List['BlockquoteItem']
+
+def process_blockquote_item(item: BlockquoteItem, level: int = 1) -> List[str]:
     """
-    Process a blockquote item and its nested content recursively.
-    Returns a list of properly formatted markdown lines.
+    Process a blockquote item and its nested items recursively.
+
+    Args:
+        item: Dictionary containing 'content' and 'items' fields
+        level: Current nesting level (default: 1)
+
+    Returns:
+        List of properly formatted markdown lines
     """
     result = []
     prefix = '>' * level + ' '
 
-    if isinstance(item, dict):
-        # Get the parent text and its children
-        parent_text = next(iter(item))  # Get the only key
-        children = item[parent_text]    # Get its value (nested content)
+    # Add the current item's content
+    result.append(f"{prefix}{item['content']}")
 
-        # Add the parent line
-        result.append(f"{prefix}{parent_text}")
-
-        # Process children based on their type
-        if isinstance(children, list):
-            # Process list of items
-            for child in children:
-                result.extend(process_blockquote_item(child, level + 1))
-        elif isinstance(children, dict):
-            # Process nested dictionary
-            result.extend(process_blockquote_item(children, level + 1))
-    else:
-        # Handle simple string items
-        result.append(f"{prefix}{item}")
+    # Process nested items if any
+    for nested_item in item['items']:
+        result.extend(process_blockquote_item(nested_item, level + 1))
 
     return result
 
 def blockquote_data_to_md(data: Dict[str, Any]) -> Text:
-    """Convert blockquote data structure to markdown format."""
+    """
+    Convert blockquote data structure to markdown format.
+
+    Args:
+        data: Dictionary containing blockquote data
+
+    Returns:
+        Formatted markdown string
+    """
     if 'blockquote' not in data:
         return ''
 
@@ -39,4 +44,4 @@ def blockquote_data_to_md(data: Dict[str, Any]) -> Text:
     for item in data['blockquote']:
         result.extend(process_blockquote_item(item))
 
-    return '\n'.join(result)
+    return '\n'.join(result) + '\n'

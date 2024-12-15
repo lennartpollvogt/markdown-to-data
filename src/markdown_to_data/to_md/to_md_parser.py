@@ -22,7 +22,7 @@ from .md_elements.to_md_lists import list_data_to_md
 from .md_elements.to_md_def_lists import definition_list_data_to_md
 from .md_elements.to_md_code import code_data_to_md
 from .md_elements.to_md_tables import table_data_to_md
-from .md_elements.to_md_headers import header_data_to_md
+from .md_elements.to_md_headers import header_data_to_md, get_header_level_type
 from .md_elements.to_md_separator import separator_data_to_md
 
 def to_md_parser(
@@ -108,27 +108,39 @@ def to_md_parser(
         if not item or not isinstance(item, dict):
             continue
 
-        element_type, content = next(iter(item.items()))
+        element_type = next(iter(item))
 
-        # First check exclusions (both by index and element type)
-        if idx in excluded_indices or \
-           element_type in excluded_elements or \
-           (element_type in header_types and 'headers' in excluded_elements):
-            continue
+        # Special handling for headers
+        if element_type == 'header':
+            header_level = item['header']['level']
+            header_type = get_header_level_type(header_level)
 
-        # Then check inclusions
-        if 'all' not in include and not (
-            idx in included_indices or
-            element_type in included_elements or
-            (element_type in header_types and 'headers' in included_elements)
-        ):
-            continue
+            # Check if this header level should be excluded
+            if (idx in excluded_indices or
+                header_type in excluded_elements or
+                'headers' in excluded_elements):
+                continue
 
-        # Process the element
-        if element_type in header_types:
-            parsed_content = header_data_to_md({element_type: content})
+            # Check if this header level should be included
+            if 'all' not in include and not (
+                idx in included_indices or
+                header_type in included_elements or
+                'headers' in included_elements):
+                continue
+
+            parsed_content = header_data_to_md(item)
+
+        # Handle other elements
         elif element_type in parser_map:
-            parsed_content = parser_map[element_type](content)
+            if idx in excluded_indices or element_type in excluded_elements:
+                continue
+
+            if 'all' not in include and not (
+                idx in included_indices or
+                element_type in included_elements):
+                continue
+
+            parsed_content = parser_map[element_type](item)
         else:
             continue
 

@@ -1,26 +1,62 @@
-from typing import Dict, Any, Text
+from typing import Dict, Any, Text, TypedDict
+
+class HeaderContent(TypedDict):
+    level: int
+    content: str
+
+class HeaderData(TypedDict):
+    header: HeaderContent
+
+def get_header_level_type(level: int) -> str:
+    """Convert numeric header level to type string."""
+    return f'h{level}'
 
 def header_data_to_md(data: Dict[str, Any]) -> Text:
     """
     Convert header data to markdown format.
 
     Args:
-        data: Dictionary with header level (h1-h6) as key and content as value
+        data: Dictionary containing header data with 'level' and 'content'
+        Expected structure:
+        {
+            'header': {
+                'level': int (1-6),
+                'content': str
+            }
+        }
 
     Returns:
         Formatted markdown header string
+
+    Examples:
+        >>> header_data_to_md({'header': {'level': 1, 'content': 'Title'}})
+        '# Title\\n'
+        >>> header_data_to_md({'header': {'level': 2, 'content': 'Subtitle'}})
+        '## Subtitle\\n'
     """
-    if not isinstance(data, dict) or not data:
+    # Basic validation
+    if not isinstance(data, dict) or 'header' not in data:
         return ''
 
-    # Valid header levels
-    header_levels = {'h1': '#', 'h2': '##', 'h3': '###',
-                    'h4': '####', 'h5': '#####', 'h6': '######'}
+    header_data = data['header']
 
-    # Get the first (and should be only) key-value pair
-    for level, content in data.items():
-        if level in header_levels:
-            return f"{header_levels[level]} {str(content)}"
-        else:
-            return content
-    return ''
+    # Validate header structure
+    if not isinstance(header_data, dict) or \
+       'level' not in header_data or \
+       'content' not in header_data:
+        return ''
+
+    # Get level and content
+    level = header_data['level']
+    content = header_data['content']
+
+    # Validate level
+    if not isinstance(level, int) or level < 1 or level > 6:
+        return ''
+
+    # Convert level to markdown header syntax
+    header_marks = '#' * level
+
+    # Format header with content
+    # Ensure content is converted to string and stripped of leading/trailing whitespace
+    return f"{header_marks} {str(content).strip()}\n"

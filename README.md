@@ -1,9 +1,6 @@
 # markdown-to-data
 Convert markdown and its elements (tables, lists, code, etc.) into structured, easily processable data formats like lists and hierarchical dictionaries (or JSON), with support for parsing back to markdown.
 
-[WIP]
-This project is still work in progress and early state. The functionality is limited (see Status).
-
 ## Status
 - [x] Detect, extract and convert markdown building blocks into Python data structures
 - [x] Provide two formats for parsed markdown:
@@ -11,33 +8,20 @@ This project is still work in progress and early state. The functionality is lim
   - [x] Dictionary format: Nested structure using headers as keys
 - [x] Convert parsed markdown to JSON
 - [x] Parse markdown data back to markdown formatted string
-  - [x] add options which data gets parsed back to markdown
+  - [x] Add options which data gets parsed back to markdown
 - [x] Extract specific building blocks (e.g., only tables or lists)
+- [x] Support for task lists (checkboxes)
+- [x] Enhanced code block handling with language detection
+- [x] Comprehensive blockquote support with nesting
+- [x] Consistent handling of definition lists
 - [x] Provide comprehensive documentation
-- [x] Add more test coverage --> 134 test cases
+- [x] Add more test coverage --> 215 test cases
 - [x] Publish on PyPI
-
-
-**Table of content**:
-- [Quick overview](#quick-overview)
-  - [Installation](#installation)
-  - [Basic Usage](#basic-usage)
-  - [Parse back to markdown](#parse-back-to-markdown-to_md)
-- [Supported Markdown Elements](#supported-markdown-elements)
-    - [Metadata](#metadata-yaml-frontmatter)
-    - [Headers](#headers-h1-h6)
-    - [Lists](#lists-ordered-and-unordered-with-nesting)
-    - [Tables](#tables)
-    - [Code blocks](#code-blocks-with-language-detection)
-    - [Definition lists](#definition-lists)
-    - [Blockquotes](#blockquotes)
-    - [Paragraphs](#paragraphs)
-    - [Separator](#separator)
-- [Why?](#why-markdown-to-data)
+- [ ] Align with edge cases of [Common Markdown Specification](https://spec.commonmark.org/0.31.2/)
 
 ## Quick Overview
 
-### Installation
+### Install
 ```bash
 pip install markdown-to-data
 ```
@@ -54,14 +38,19 @@ author: John Doe
 
 # Main Header
 
-- Item 1
-- Item 2
-    - Subitem 1
+- [ ] Pending task
+    - [x] Completed subtask
+- [x] Completed task
 
 ## Table Example
 | Column 1 | Column 2 |
 |----------|----------|
 | Cell 1   | Cell 2   |
+
+´´´python
+def hello():
+    print("Hello World!")
+´´´
 """
 
 md = Markdown(markdown)
@@ -74,14 +63,8 @@ print(md.md_list)
 print(md.md_dict)
 # Headers are used as keys for nesting content
 
-# Get a list of markdown elements included in the markdown file, the number of their appearance, the position and types
+# Get information about markdown elements
 print(md.md_elements)
-
-# Get the nested dictionary as a JSON string
-print(md.to_json(indent=4))
-
-# Extract specific building blocks
-print(md.get_md_building_blocks(blocks=['table']))
 ```
 
 ### Output Formats
@@ -90,15 +73,34 @@ print(md.get_md_building_blocks(blocks=['table']))
 ```python
 [
     {'metadata': {'title': 'Example text', 'author': 'John Doe'}},
-    {'h1': 'Main Header'},
+    {'header': {'level': 1, 'content': 'Main Header'}},
     {
         'list': {
             'type': 'ul',
-            'list': ['Item 1', {'Item 2': ['Subitem 1']}]
+            'items': [
+                {
+                    'content': 'Pending task',
+                    'items': [
+                        {
+                            'content': 'Completed subtask',
+                            'items': [],
+                            'task': 'checked'
+                        }
+                    ],
+                    'task': 'unchecked'
+                },
+                {'content': 'Completed task', 'items': [], 'task': 'checked'}
+            ]
         }
     },
-    {'h2': 'Table Example'},
-    {'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]}
+    {'header': {'level': 2, 'content': 'Table Example'}},
+    {'table': {'Column 1': ['Cell 1'], 'Column 2': ['Cell 2']}},
+    {
+        'code': {
+            'language': 'python',
+            'content': 'def hello():\n    print("Hello World!")'
+        }
+    }
 ]
 ```
 
@@ -107,593 +109,419 @@ print(md.get_md_building_blocks(blocks=['table']))
 {
     'metadata': {'title': 'Example text', 'author': 'John Doe'},
     'Main Header': {
-        'list': {
+        'list_1': {
             'type': 'ul',
-            'list': ['Item 1', {'Item 2': ['Subitem 1']}]
+            'items': [
+                {
+                    'content': 'Pending task',
+                    'items': [
+                        {
+                            'content': 'Completed subtask',
+                            'items': [],
+                            'task': 'checked'
+                        }
+                    ],
+                    'task': 'unchecked'
+                },
+                {'content': 'Completed task', 'items': [], 'task': 'checked'}
+            ]
         },
         'Table Example': {
-            'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]
+            'table_1': {'Column 1': ['Cell 1'], 'Column 2': ['Cell 2']},
+            'code_1': {
+                'language': 'python',
+                'content': 'def hello():\n    print("Hello World!")'
+            }
         }
     }
 }
 ```
 
 #### MD Elements (`md.md_elements`)
-
-Get information about all markdown elements in the markdown file.
-The output is based on `md_list` and can be used for
-- Creating a table of contents based on headings
-- Finding specific elements by their positions in `md_list`
-- Jump to specific sections in `md_list`
-- Checking if required elements are present
-- Understanding the document's composition and complexity
-- Identifying patterns in document structure
-
 ```python
 {
     'metadata': {'count': 1, 'positions': [0], 'variants': set()},
-    'h1': {'count': 1, 'positions': [1], 'variants': set()},
+    'header': {'count': 2, 'positions': [1, 3], 'variants': set()},
     'list': {'count': 1, 'positions': [2], 'variants': {'ul'}},
-    'h2': {'count': 1, 'positions': [3], 'variants': set()},
-    'table': {'count': 1, 'positions': [4], 'variants': set()}
+    'table': {'count': 1, 'positions': [4], 'variants': set()},
+    'code': {'count': 1, 'positions': [5], 'variants': {'python'}}
 }
-```
-
-
-#### JSON (`md.to_json(indent=4)`)
-
-Converts the `md_dict` to a JSON string. By applying `ìndent` you can specify the indents for the output.
-
-```
-{
-    'metadata': {'title': 'Example text', 'author': 'John Doe'},
-    'Main Header': {
-        'list': {
-            'type': 'ul',
-            'list': ['Item 1', {'Item 2': ['Subitem 1']}]
-        },
-        'Table Example': {
-            'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]
-        }
-    }
-}
-```
-
-
-#### Building blocks (`md.get_md_building_blocks(blocks=['table'])`)
-```python
-[
-    {
-        'table': [
-            {
-                'Column 1': 'Cell 1',
-                'Column 2': 'Cell 2'
-            }
-        ]
-    }
-]
 ```
 
 ### Parse back to markdown (`to_md`)
 
-The `Markdown` class comes as well with a method to parse the data of markdown elements back to markdown formatted strings.
-The method is called `to_md` and comes with some arguments to manipulate the outcome.
+The `Markdown` class provides a method to parse markdown data back to markdown-formatted strings.
+The `to_md` method comes with options to customize the output:
 
 ```python
 from markdown_to_data import Markdown
 
 markdown = """
 ---
-title: Example text
-author: John Doe
+title: Example
 ---
 
 # Main Header
 
-- Item 1
-- Item 2
-    - Subitem 1
+- [x] Task 1
+    - [ ] Subtask
+- [ ] Task 2
 
-## Table Example
-| Column 1 | Column 2 |
-|----------|----------|
-| Cell 1   | Cell 2   |
+## Code Example
+´´´python
+print("Hello")
+´´´
 """
 
 md = Markdown(markdown)
 ```
 
-**Example 1**: include all and exclude nothing
+**Example 1**: Include specific elements
 ```python
 print(md.to_md(
-    include=['headers', 'list', 4], # A list of markdown elements that will by included (here: all headers, the list and the fifth elements)
-    exclude=[1], # the default value is None; markdown elements will be excluded based on the index in this argument;
-    spacer=1 # the default value; defines how many empty lines will be added after each markdown element
+    include=['header', 'list'],  # Include all headers and lists
+    spacer=1  # One empty line between elements
 ))
 ```
 
 Output:
-```
+```markdown
 # Main Header
 
-- Item 1
-- Item 2
-  - Subitem 1
-
-| Column 1 | Column 2 |
-|----------|----------|
-| Cell 1   | Cell 2   |
+- [x] Task 1
+    - [ ] Subtask
+- [ ] Task 2
 ```
 
-**Example 2**: `exclude` overwrites `include` and two `spacer`s
+**Example 2**: Include by position and exclude specific types
 ```python
 print(md.to_md(
-    include=['all'], # the default value; will include all markdown elements
-    exclude=['h2', 3], # will overwrite `include` and exclude h2 headers and the fourth element (here: the list)
-    spacer=2 # adds two empty line after each markdown elements which gets parsed
+    include=[0, 1, 2],  # Include first three elements
+    exclude=['code'],   # But exclude any code blocks
+    spacer=2           # Two empty lines between elements
 ))
 ```
 
 Output:
-```
+```markdown
 ---
-title: Example text
-author: John Doe
+title: Example
 ---
 
 
 # Main Header
 
 
-| Column 1 | Column 2 |
-|----------|----------|
-| Cell 1   | Cell 2   |
+- [x] Task 1
+    - [ ] Subtask
+- [ ] Task 2
 ```
 
-**Example 3**: `exclude` = `['all']` excludes everything and returns an empty line
-```python
-print(md.to_md(
-    include=['h1', 'list', 'table'],
-    exclude=['all'], # will overwrite the `include``and exclude all markdown elements
-    spacer=1
-))
-```
+#### Using `to_md_parser` Function
 
-Output:
-```
-
-```
-
-#### `to_md_parser` function
-
-**Note**: you can use the function `to_md_parser` to parse a list of dictionaries of markdown elements to markdown.
+The `to_md_parser` function can be used directly to convert markdown data structures to markdown text:
 
 ```python
 from markdown_to_data import to_md_parser
 
-example = [
+data = [
     {
         'metadata': {
-            'title': 'Test Document',
-            'date': '2024-01-01'
+            'title': 'Document'
         }
     },
-    {'h1': 'Main Title'},
-    {'paragraph': 'Sample paragraph'},
-    {'h2': 'Subtitle'},
-    {'list': {
-        'type': 'ul',
-        'list': ['Item 1', 'Item 2']
-    }}
+    {
+        'header': {
+            'level': 1,
+            'content': 'Title'
+        }
+    },
+    {
+        'list': {
+            'type': 'ul',
+            'items': [
+                {
+                    'content': 'Task 1',
+                    'items': [],
+                    'task': 'checked'
+                }
+            ]
+        }
+    }
 ]
 
-markdown_string = to_md_parser(data=example, spacer=1)
-
-print(markdown_string)
+print(to_md_parser(data=data, spacer=1))
 ```
 
 Output:
-```
+```markdown
 ---
-title: Test Document
-date: 2024-01-01
+title: Document
 ---
 
-# Main Title
+# Title
 
-Sample paragraph
-
-## Subtitle
-
-- Item 1
-- Item 2
+- [x] Task 1
 ```
 
 ## Supported Markdown Elements
 
 ### Metadata (YAML frontmatter)
 
-A metadata block can only appear once in the markdown file and must be at the beginning.
-
 ```python
 metadata = '''
 ---
 title: Document
 author: John Doe
-date: 2023-12-20
+tags: markdown, documentation
 ---
 '''
 
-md_metadata = Markdown(metadata)
-print(md_metadata.md_list)
-print(md_metadata.md_dict)
+md = Markdown(metadata)
+print(md.md_list)
 ```
 
-**`md_list'**
-```
+Output:
+```python
 [
     {
         'metadata': {
             'title': 'Document',
             'author': 'John Doe',
-            'date': '2023-12-20'
+            'tags': ['markdown', 'documentation']
         }
     }
 ]
 ```
 
-**'md_dict`**
-```
-{'metadata': {'title': 'Document', 'author': 'John Doe', 'date': '2023-12-20'}}
-```
-
-### Headers (h1-h6)
+### Headers
 
 ```python
 headers = '''
-# Heading level 1
-
-## Heading level 2
-
-## Heading level 2
-
-### Heading level 3
-
-# Heading level 1 again
+# Main Title
+## Section
+### Subsection
 '''
 
-md_headers = Markdown(headers)
-print(md_headers.md_list)
-print(md_headers.md_dict)
+md = Markdown(headers)
+print(md.md_list)
 ```
 
-**`md_list'**
-```
+Output:
+```python
 [
-    {'h1': 'Heading level 1'},
-    {'h2': 'Heading level 2'},
-    {'h2': 'Heading level 2'},
-    {'h3': 'Heading level 3'},
-    {'h1': 'Heading level 1 again'}
+    {
+        'header': {
+            'level': 1,
+            'content': 'Main Title'
+        }
+    },
+    {
+        'header': {
+            'level': 2,
+            'content': 'Section'
+        }
+    },
+    {
+        'header': {
+            'level': 3,
+            'content': 'Subsection'
+        }
+    }
 ]
 ```
 
-**'md_dict`**
-```
-{
-    'Heading level 1': {'Heading level 2': {'Heading level 3': {}}},
-    'Heading level 1 again': {}
-}
-```
-
-### Lists (ordered and unordered with nesting)
+### Lists (Including Task Lists)
 
 ```python
 lists = '''
-- item 1
-- item 2
-    - subitem 1
-    - subitem 2
-- item 3
-
-1. item 1
-2. item 2
-3. item 3
+- Regular item
+    - Nested item
+- [x] Completed task
+    - [ ] Pending subtask
+1. Ordered item
+    1. Nested ordered
 '''
 
-md_lists = Markdown(lists)
-print(md_lists.md_list)
-print(md_lists.md_dict)
+md = Markdown(lists)
+print(md.md_list)
 ```
 
-**`md_list'**
-```
+Output:
+```python
 [
     {
         'list': {
             'type': 'ul',
-            'list': [
-                'item 1',
-                {'item 2': ['subitem 1', 'subitem 2']},
-                'item 3'
+            'items': [
+                {
+                    'content': 'Regular item',
+                    'items': [
+                        {'content': 'Nested item', 'items': [], 'task': None}
+                    ],
+                    'task': None
+                },
+                {
+                    'content': 'Completed task',
+                    'items': [
+                        {
+                            'content': 'Pending subtask',
+                            'items': [],
+                            'task': 'unchecked'
+                        }
+                    ],
+                    'task': 'checked'
+                }
             ]
         }
     },
-    {'list': {'type': 'ol', 'list': ['item 1', 'item 2', 'item 3']}}
+    {
+        'list': {
+            'type': 'ol',
+            'items': [
+                {
+                    'content': 'Ordered item',
+                    'items': [
+                        {'content': 'Nested ordered', 'items': [], 'task': None}
+                    ],
+                    'task': None
+                }
+            ]
+        }
+    }
 ]
-```
-
-**'md_dict`**
-```
-{
-    'list': {
-        'type': 'ul',
-        'list': [
-            'item 1',
-            {'item 2': ['subitem 1', 'subitem 2']},
-            'item 3'
-        ]
-    },
-    'list2': {'type': 'ol', 'list': ['item 1', 'item 2', 'item 3']}
-}
 ```
 
 ### Tables
 
 ```python
 tables = '''
-| Column 1 | Column 2 |
+| Header 1 | Header 2 |
 |----------|----------|
-| Cell 1   | Cell 2   |
-
-| Column 1 | Column 2 |
-|----------|----------|
-| Cell 1   | Cell 2   |
+| Value 1  | Value 2  |
+| Value 3  | Value 4  |
 '''
 
-md_tables = Markdown(tables)
-print(md_tables.md_list)
-print(md_tables.md_dict)
+md = Markdown(tables)
+print(md.md_list)
 ```
 
-**`md_list'**
-```
+Output:
+```python
 [
-    {'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]},
-    {'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]}
+    {
+        'table': {
+            'Header 1': ['Value 1', 'Value 3'],
+            'Header 2': ['Value 2', 'Value 4']
+        }
+    }
 ]
 ```
 
-**'md_dict`**
-```
-{
-    'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}],
-    'table2': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]
-}
-```
-
-### Code blocks (with language detection)
+### Code Blocks
 
 ```python
 code = '''
-´´´
-{
-    'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}],
-    'table2': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]
-}
+´´´python
+def example():
+    return "Hello"
 ´´´
 
-´´´python
-def hello():
-    print('Hello World!')
+´´´javascript
+console.log("Hello");
 ´´´
 '''
 
-md_code = Markdown(code)
-print(md_code.md_list)
-print(md_code.md_dict)
+md = Markdown(code)
+print(md.md_list)
 ```
 
-**`md_list'**
-```
+Output:
+```python
 [
-    {
-        'code': {
-            'language': None,
-            'content': "    'table': [{'Column 1': 'Cell 1', 'Column 2':
-'Cell 2'}],\n    'table2': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]\n}"
-        }
-    },
     {
         'code': {
             'language': 'python',
-            'content': "def hello():\n    print('Hello World!')"
-        }
-    }
-]
-```
-
-**'md_dict`**
-```
-{
-    'code': {
-        'language': '{',
-        'content': "    'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell
-2'}],\n    'table2': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]\n}"
-    },
-    'code2': {
-        'language': 'python',
-        'content': "def hello():\n    print('Hello World!')"
-    }
-}
-```
-
-### Definition lists
-
-```python
-def_lists = '''
-term 1
-: definition 1
-: definition 2
-
-term 2
-: definition 1
-: definition 2
-'''
-
-md_def_lists = Markdown(def_lists)
-print(md_def_lists.md_list)
-print(md_def_lists.md_dict)
-```
-
-**`md_list'**
-```
-[
-    {
-        'def_list': {
-            'term': 'term 1',
-            'list': ['definition 1', 'definition 2']
+            'content': 'def example():\n    return "Hello"'
         }
     },
     {
-        'def_list': {
-            'term': 'term 2',
-            'list': ['definition 1', 'definition 2']
+        'code': {
+            'language': 'javascript',
+            'content': 'console.log("Hello");'
         }
     }
 ]
-```
-
-**'md_dict`**
-```
-{
-    'def_list': {
-        'term': 'term 1',
-        'list': ['definition 1', 'definition 2']
-    },
-    'def_list2': {
-        'term': 'term 2',
-        'list': ['definition 1', 'definition 2']
-    }
-}
 ```
 
 ### Blockquotes
 
 ```python
 blockquotes = '''
-> a single line blockquote
+> Simple quote
+> Multiple lines
 
-> a nested blockquote
-> with multiline
->> the nested part
-> last line of the blockquote
+> Nested quote
+>> Inner quote
+> Back to outer
 '''
 
-md_blockquotes = Markdown(blockquotes)
-print(md_blockquotes.md_list)
-print(md_blockquotes.md_dict)
+md = Markdown(blockquotes)
+print(md.md_list)
 ```
 
-**`md_list'**
-```
+Output:
+```python
 [
-    {'blockquote': ['a single line blockquote']},
     {
         'blockquote': [
-            'a nested blockquote',
-            {'with multiline': ['the nested part']},
-            'last line of the blockquote'
+            {'content': 'Simple quote', 'items': []},
+            {'content': 'Multiple lines', 'items': []}
+        ]
+    },
+    {
+        'blockquote': [
+            {
+                'content': 'Nested quote',
+                'items': [
+                    {'content': 'Inner quote', 'items': []}
+                ]
+            },
+            {'content': 'Back to outer', 'items': []}
         ]
     }
 ]
 ```
 
-**'md_dict`**
-```
-{
-    'blockquote': ['a single line blockquote'],
-    'blockquote2': [
-        'a nested blockquote',
-        {'with multiline': ['the nested part']},
-        'last line of the blockquote'
-    ]
-}
-```
-
-### Paragraphs
+### Definition Lists
 
 ```python
-paragraphs = '''
-A paragraph
-a second paragraph
-
-a paragraph after a empty row
+def_lists = '''
+Term
+: Definition 1
+: Definition 2
 '''
 
-md_paragraphs = Markdown(paragraphs)
-rich.print(md_paragraphs.md_list)
-rich.print(md_paragraphs.md_dict)
+md = Markdown(def_lists)
+print(md.md_list)
 ```
 
-**`md_list'**
-```
-[
-    {'paragraph': 'A paragraph'},
-    {'paragraph': 'a second paragraph'},
-    {'paragraph': 'a paragraph after a empty row'}
-]
-```
-
-**'md_dict`**
-```
-{
-    'paragraph': 'A paragraph',
-    'paragraph2': 'a second paragraph',
-    'paragraph3': 'a paragraph after a empty row'
-}
-```
-
-### Separator
-
-As described in the example for [Metadata](#metadata) a metadata block must appear at the very beginning of a markdown file. Later in the file a combination of three `-` (=`---`) will be classified as a separator.
-
+Output:
 ```python
-separator = '''
----
-'''
-
-md_separator = Markdown(separator)
-print(md_separator.md_list)
-print(md_separator.md_dict)
-```
-
-**`md_list'**
-```
 [
-    {'separator': '---'}
+    {
+        'def_list': {
+            'term': 'Term',
+            'list': ['Definition 1', 'Definition 2']
+        }
+    }
 ]
 ```
-
-**'md_dict`**
-```
-{
-    'separator': '---'
-}
-```
-
-## Why markdown-to-data?
-This library focuses on converting markdown into structured data formats that are easy to process programmatically. It's particularly useful for:
-
-- Working with LLMs that output markdown-formatted responses
-- Extracting structured data from markdown documentation
-- Processing markdown content in data pipelines
-- Building automation tools that work with markdown content
 
 ## Limitations
 - Some extended markdown flavors might not be supported
-- Complex nested structures might need additional processing
-- Currently only supports basic markdown elements
+- Inline formatting (bold, italic, links) is currently not parsed
+- Table alignment specifications are not preserved
 
 ## Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request or open an issue.

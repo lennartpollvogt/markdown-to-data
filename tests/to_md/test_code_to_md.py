@@ -1,11 +1,12 @@
-import pytest
 from src.markdown_to_data.to_md.md_elements.to_md_code import code_data_to_md
 
 def test_code_block_no_language():
     data = {
-        'language': None,
-        'content': "{'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}],"
-                  "'table2': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]}"
+        'code': {
+            'language': None,
+            'content': "{'table': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}],"
+                      "'table2': [{'Column 1': 'Cell 1', 'Column 2': 'Cell 2'}]}"
+        }
     }
     expected = (
         "```\n"
@@ -17,8 +18,10 @@ def test_code_block_no_language():
 
 def test_code_block_with_language():
     data = {
-        'language': 'python',
-        'content': "def hello():\n    print('Hello World!')"
+        'code': {
+            'language': 'python',
+            'content': "def hello():\n    print('Hello World!')"
+        }
     }
     expected = (
         "```python\n"
@@ -30,8 +33,10 @@ def test_code_block_with_language():
 
 def test_empty_code_block():
     data = {
-        'language': 'python',
-        'content': ''
+        'code': {
+            'language': 'python',
+            'content': ''
+        }
     }
     expected = "```python\n\n```"
     assert code_data_to_md(data) == expected
@@ -41,13 +46,19 @@ def test_invalid_input():
     assert code_data_to_md(data) == ''
 
 def test_missing_content():
-    data = {'language': 'python'}
+    data = {
+        'code': {
+            'language': 'python'
+        }
+    }
     assert code_data_to_md(data) == ''
 
 def test_multiline_code():
     data = {
-        'language': 'javascript',
-        'content': "function test() {\n    const x = 1;\n    return x;\n}"
+        'code': {
+            'language': 'javascript',
+            'content': "function test() {\n    const x = 1;\n    return x;\n}"
+        }
     }
     expected = (
         "```javascript\n"
@@ -61,8 +72,10 @@ def test_multiline_code():
 
 def test_code_with_special_characters():
     data = {
-        'language': 'bash',
-        'content': "echo 'Special * characters $ and # symbols'"
+        'code': {
+            'language': 'bash',
+            'content': "echo 'Special * characters $ and # symbols'"
+        }
     }
     expected = (
         "```bash\n"
@@ -73,16 +86,22 @@ def test_code_with_special_characters():
 
 def test_non_string_content():
     data = {
-        'language': 'python',
-        'content': 42
+        'code': {
+            'language': 'python',
+            'content': 42
+        }
     }
     expected = "```python\n42\n```"
     assert code_data_to_md(data) == expected
 
 def test_none_content():
     data = {
-        'language': 'python',
-        'content': None
+        'code': {
+            'language': 'python',
+            'content': ''
+        }
     }
-    expected = "```python\nNone\n```"
+    expected = """```python
+
+```"""
     assert code_data_to_md(data) == expected

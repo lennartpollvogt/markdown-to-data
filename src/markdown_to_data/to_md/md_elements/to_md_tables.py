@@ -1,155 +1,102 @@
-'''
-Requirements and processing steps:
-1. Look in every column for the longest entry (column/header names included). White spaces between words count as well.
-2. The number of characters (= n) of the longest entry will be added by 2 more white spaces (= n+2; one for the beginning and one for the end)
-    a. Example: 'Column Header' has a length of 13 (including whitespace between). When this is the longest entry in its column, the width of the column will be 15.
-    b. Consider: Another column might have short or longer entries, which why it is necessary to get for every column the longest entry.
-    c. Consider: A entry start after '| ' (beware whitespace after `|`) with trailing whitespaces to meet the length of the set width of the column
-    d. Consider: A column in each row starts and ends with a `|`
-3. Start with the header row of the table.
-4. Separate the header row from the value rows with '|---|' (number of `-` depends on column width)
-5. Add the value rows with their entries.
+from typing import Dict, List, Any, Text
 
-Example:
-'table': [
-    {
-        'Service': 'Cloud Services',
-        'Q1 Sales ($)': '100,000',
-        'Q2 Sales ($)': '150,000',
-        'Total Sales ($)': '250,000',
-        'Growth (%)': '50%'
-    },
-    {
-        'Service': 'Maintenance',
-        'Q1 Sales ($)': '80,000',
-        'Q2 Sales ($)': '90,000',
-        'Total Sales ($)': '170,000',
-        'Growth (%)': '12.5%'
-    },
-    {
-        'Service': 'Consulting',
-        'Q1 Sales ($)': '50,000',
-        'Q2 Sales ($)': '70,000',
-        'Total Sales ($)': '120,000',
-        'Growth (%)': '40%'
-    }
-]
-
-In the table the longest entry is 'Total Sales ($)'. It has 15 characters (indluding white spaces).
-That means, the width of each column will be 15 + 2 = 17
-
-The table would in fact look like this:
-| Service         | Q1 Sales ($)    | Q2 Sales ($)    | Total Sales ($) | Growth (%)      |
-|-----------------|-----------------|-----------------|-----------------|-----------------|
-| Cloud Services  | 100,000         | 150,000         | 250,000         | 50%             |
-| Maintenance     | 80,000          | 90,000          | 170,000         | 12.5%           |
-| Consulting      | 50,000          | 70,000          | 120,000         | 40%             |
-
-'''
-from typing import Dict, List, Any, Text, Union
-
-def calculate_column_widths(data: List[Dict[str, Any]]) -> Dict[str, int]:
+def transpose_table_data(data: Dict[str, List[Any]]) -> List[Dict[str, Any]]:
     """
-    Calculate the required width for each column based on the longest entry.
+    Transform column-based table data to row-based format.
 
     Args:
-        data: List of dictionaries representing table rows
+        data: Dictionary with columns as keys and value lists
 
     Returns:
-        Dictionary mapping column names to their required widths
+        List of dictionaries, each representing a row
     """
     if not data:
-        return {}
+        return []
 
-    widths = {}
-    headers = data[0].keys()
+    # Get number of rows from length of any column
+    num_rows = len(next(iter(data.values())))
 
+    # Create list of row dictionaries
+    rows = []
+    for i in range(num_rows):
+        row = {}
+        for col_name, col_values in data.items():
+            row[col_name] = col_values[i] if i < len(col_values) else None
+        rows.append(row)
+
+    return rows
+
+def calculate_column_widths(
+    headers: List[str],
+    rows: List[Dict[str, Any]]
+) -> Dict[str, int]:
+    """
+    Calculate required width for each column.
+    """
+    widths = {header: len(str(header)) for header in headers}
+
+    for row in rows:
+        for header in headers:
+            value = str(row.get(header, ''))
+            widths[header] = max(widths[header], len(value))
+
+    # Add padding
+    return {k: v + 2 for k, v in widths.items()}
+
+def format_row(
+    row: Dict[str, Any],
+    headers: List[str],
+    widths: Dict[str, int]
+) -> str:
+    """Format a single table row."""
+    cells = []
     for header in headers:
-        # Start with header length
-        max_length = len(str(header))
-        # Check each row's value length
-        for row in data:
-            value_length = len(str(row[header]))
-            max_length = max(max_length, value_length)
-        # Add 2 for padding (one space on each side)
-        widths[header] = max_length + 2
+        value = str(row.get(header, ''))
+        padding = widths[header] - len(value)
+        cells.append(f" {value}{' ' * (padding - 1)}")
+    return f"|{'|'.join(cells)}|"
 
-    return widths
+def create_separator(headers: List[str], widths: Dict[str, int]) -> str:
+    """Create separator row."""
+    return '|' + '|'.join('-' * width for width in widths.values()) + '|'
 
-def format_row(row: Dict[str, Any], widths: Dict[str, int]) -> str:
-    """
-    Format a single row according to the calculated column widths.
-
-    Args:
-        row: Dictionary representing a single table row
-        widths: Dictionary of column widths
-
-    Returns:
-        Formatted row string with proper padding and separators
-    """
-    formatted_cells = []
-
-    for column, width in widths.items():
-        value = str(row[column])
-        # Calculate padding needed after the value
-        padding = width - len(value) - 1  # -1 because we add one space at start
-        formatted_cell = f" {value}{' ' * padding}"
-        formatted_cells.append(formatted_cell)
-
-    return f"|{'|'.join(formatted_cells)}|"
-
-def create_separator(widths: Dict[str, int]) -> str:
-    """
-    Create the separator row between header and data.
-
-    Args:
-        widths: Dictionary of column widths
-
-    Returns:
-        Separator row string with proper width
-    """
-    separators = []
-
-    for width in widths.values():
-        separators.append('-' * width)
-
-    return f"|{'|'.join(separators)}|"
-
-def table_data_to_md(data: Union[List[Dict[str, Any]], Dict[str, List[Dict[str, Any]]]]) -> Text:
+def table_data_to_md(data: Dict[str, Any]) -> Text:
     """
     Convert table data to markdown table format.
 
     Args:
-        data: Either a list of dictionaries representing table rows,
-              or a dictionary with a 'table' key containing the list
+        data: Dictionary containing table data in column format
 
     Returns:
         Formatted markdown table string
     """
-    # Handle both direct list input and dictionary with 'table' key
-    if isinstance(data, dict):
-        if 'table' not in data:
-            return ''
-        table_data = data['table']
-    else:
-        table_data = data
+    if not isinstance(data, dict) or 'table' not in data:
+        return ''
 
-    # Validate input
-    if not table_data or not isinstance(table_data, list):
+    table_data = data['table']
+    if not table_data:
+        return ''
+
+    # Get headers (column names)
+    headers = list(table_data.keys())
+
+    # Transform to row-based format
+    rows = transpose_table_data(table_data)
+    if not rows:
         return ''
 
     # Calculate column widths
-    widths = calculate_column_widths(table_data)
+    widths = calculate_column_widths(headers, rows)
 
-    # Create header row using first row's keys
-    headers = {header: header for header in table_data[0].keys()}
-    header_row = format_row(headers, widths)
+    # Create header row
+    header_row = format_row(dict(zip(headers, headers)), headers, widths)
 
     # Create separator row
-    separator_row = create_separator(widths)
+    separator_row = create_separator(headers, widths)
 
     # Create data rows
-    data_rows = [format_row(row, widths) for row in table_data]
+    data_rows = [format_row(row, headers, widths) for row in rows]
 
-    # Combine all parts
-    return '\n'.join([header_row, separator_row] + data_rows)
+    # Combine all parts with newlines
+    table_parts = [header_row, separator_row] + data_rows
+    return '\n'.join(table_parts) + '\n'

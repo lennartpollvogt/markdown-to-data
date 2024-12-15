@@ -1,50 +1,72 @@
-import pytest
 from src.markdown_to_data.to_md.md_elements.to_md_headers import header_data_to_md
 
-def test_h1_header():
-    data = {'h1': 'Testing the capabilities of `markdown-to-data`'}
-    expected = "# Testing the capabilities of `markdown-to-data`"
+def test_basic_h1():
+    data = {'header': {'level': 1, 'content': 'Basic Title'}}
+    expected = "# Basic Title\n"
     assert header_data_to_md(data) == expected
 
-def test_h2_header():
-    data = {'h2': 'Table section'}
-    expected = "## Table section"
+def test_basic_h2():
+    data = {'header': {'level': 2, 'content': 'Subtitle'}}
+    expected = "## Subtitle\n"
     assert header_data_to_md(data) == expected
 
 def test_all_header_levels():
-    test_content = "Header Test"
-    for i in range(1, 7):
-        data = {f'h{i}': test_content}
-        expected = f"{'#' * i} {test_content}"
+    for level in range(1, 7):
+        data = {'header': {'level': level, 'content': f'Header {level}'}}
+        expected = f"{'#' * level} Header {level}\n"
         assert header_data_to_md(data) == expected
 
-def test_empty_input():
+def test_with_empty_content():
+    data = {'header': {'level': 1, 'content': ''}}
+    expected = "# \n"
+    assert header_data_to_md(data) == expected
+
+def test_with_whitespace_content():
+    data = {'header': {'level': 1, 'content': '   Spaced Content   '}}
+    expected = "# Spaced Content\n"
+    assert header_data_to_md(data) == expected
+
+def test_with_invalid_level():
+    data = {'header': {'level': 7, 'content': 'Invalid'}}
+    expected = ""
+    assert header_data_to_md(data) == expected
+
+def test_with_zero_level():
+    data = {'header': {'level': 0, 'content': 'Invalid'}}
+    expected = ""
+    assert header_data_to_md(data) == expected
+
+def test_with_negative_level():
+    data = {'header': {'level': -1, 'content': 'Invalid'}}
+    expected = ""
+    assert header_data_to_md(data) == expected
+
+def test_with_non_integer_level():
+    data = {'header': {'level': '1', 'content': 'Invalid'}}
+    expected = ""
+    assert header_data_to_md(data) == expected
+
+def test_with_missing_content():
+    data = {'header': {'level': 1}}
+    expected = ""
+    assert header_data_to_md(data) == expected
+
+def test_with_missing_level():
+    data = {'header': {'content': 'Missing Level'}}
+    expected = ""
+    assert header_data_to_md(data) == expected
+
+def test_with_empty_input():
     data = {}
-    assert header_data_to_md(data) == ''
-
-def test_invalid_header_level():
-    data = {'h7': 'Invalid header level'}
-    assert header_data_to_md(data) == 'Invalid header level'
-
-def test_none_input():
-    assert header_data_to_md(None) == ''
-
-def test_header_with_special_characters():
-    data = {'h1': 'Header with *italic* and **bold**'}
-    expected = "# Header with *italic* and **bold**"
+    expected = ""
     assert header_data_to_md(data) == expected
 
-def test_header_with_code():
-    data = {'h3': 'Header with `code`'}
-    expected = "### Header with `code`"
+def test_with_none_input():
+    data = None
+    expected = ""
     assert header_data_to_md(data) == expected
 
-def test_header_with_numbers():
-    data = {'h4': 'Header 123'}
-    expected = "#### Header 123"
-    assert header_data_to_md(data) == expected
-
-def test_non_string_content():
-    data = {'h1': 42}
-    expected = "# 42"
+def test_with_non_string_content():
+    data = {'header': {'level': 1, 'content': 123}}
+    expected = "# 123\n"
     assert header_data_to_md(data) == expected
