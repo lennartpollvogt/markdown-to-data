@@ -1,4 +1,3 @@
-import pytest
 from src.markdown_to_data.to_md.md_elements.to_md_def_lists import definition_list_data_to_md
 
 def test_simple_definition_list():

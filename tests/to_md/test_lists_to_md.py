@@ -171,7 +171,7 @@ def test_task_list_spacing():
     result = list_data_to_md(data)
     assert result == expected
     # Specifically check there's exactly one space between - and [
-    assert "- [" in result and not "-  [" in result
+    assert "- [" in result and "-  [" not in result
 
 
 def test_task_list_1():

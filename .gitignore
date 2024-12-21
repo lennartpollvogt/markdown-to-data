@@ -175,3 +175,4 @@ uv.lock
 .python-version
 results/
 .treeline-ignore
+.ruff_cache

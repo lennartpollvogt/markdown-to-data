@@ -3,7 +3,7 @@ This module handles the merging of classified markdown table rows into structure
 It supports tables with and without headers, handling inconsistent columns and missing values.
 """
 
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any
 
 def _is_table_row(item: Dict[str, Any]) -> bool:
     """Check if an item is a table row."""
