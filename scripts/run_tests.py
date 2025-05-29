@@ -12,18 +12,18 @@ def main():
     # Get the project root directory
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
-    
+
     # Path to the test file
-    test_file = project_root / "tests" / "test_update_dependencies.py"
-    
+    test_file = project_root / "scripts" / "test_update_dependencies.py"
+
     if not test_file.exists():
         print(f"Error: Test file not found at {test_file}")
         sys.exit(1)
-    
+
     print("Running tests for update_dependencies script...")
     print(f"Test file: {test_file}")
     print("-" * 50)
-    
+
     try:
         # Run pytest on the specific test file
         result = subprocess.run(
@@ -31,13 +31,13 @@ def main():
             cwd=project_root,
             check=False
         )
-        
+
         if result.returncode == 0:
             print("\n✅ All tests passed!")
         else:
             print(f"\n❌ Tests failed with exit code {result.returncode}")
             sys.exit(result.returncode)
-            
+
     except FileNotFoundError:
         print("Error: pytest not found. Make sure pytest is installed.")
         print("Install with: uv add --dev pytest")
