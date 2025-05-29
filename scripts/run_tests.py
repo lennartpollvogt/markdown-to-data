@@ -14,7 +14,7 @@ def main():
     project_root = script_dir.parent
 
     # Path to the test file
-    test_file = project_root / "scripts" / "test_update_dependencies.py"
+    test_file = project_root / "scripts" / "script_test_update_dependencies.py"
 
     if not test_file.exists():
         print(f"Error: Test file not found at {test_file}")
