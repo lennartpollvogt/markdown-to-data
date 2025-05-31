@@ -1,7 +1,9 @@
 # markdown-to-data
+
 Convert markdown and its elements (tables, lists, code, etc.) into structured, easily processable data formats like lists and hierarchical dictionaries (or JSON), with support for parsing back to markdown.
 
 ## Status
+
 - [x] Detect, extract and convert markdown building blocks into Python data structures
 - [x] Provide two formats for parsed markdown:
   - [x] List format: Each building block as separate dictionary in a list
@@ -22,11 +24,13 @@ Convert markdown and its elements (tables, lists, code, etc.) into structured, e
 ## Quick Overview
 
 ### Install
+
 ```bash
 pip install markdown-to-data
 ```
 
 ### Basic Usage
+
 ```python
 from markdown_to_data import Markdown
 
@@ -70,6 +74,7 @@ print(md.md_elements)
 ### Output Formats
 
 #### List Format (`md.md_list`)
+
 ```python
 [
     {'metadata': {'title': 'Example text', 'author': 'John Doe'}},
@@ -105,6 +110,7 @@ print(md.md_elements)
 ```
 
 #### Dictionary Format (`md.md_dict`)
+
 ```python
 {
     'metadata': {'title': 'Example text', 'author': 'John Doe'},
@@ -138,6 +144,7 @@ print(md.md_elements)
 ```
 
 #### MD Elements (`md.md_elements`)
+
 ```python
 {
     'metadata': {'count': 1, 'positions': [0], 'variants': set()},
@@ -177,6 +184,7 @@ md = Markdown(markdown)
 ```
 
 **Example 1**: Include specific elements
+
 ```python
 print(md.to_md(
     include=['header', 'list'],  # Include all headers and lists
@@ -185,15 +193,17 @@ print(md.to_md(
 ```
 
 Output:
+
 ```markdown
 # Main Header
 
 - [x] Task 1
-    - [ ] Subtask
+  - [ ] Subtask
 - [ ] Task 2
 ```
 
 **Example 2**: Include by position and exclude specific types
+
 ```python
 print(md.to_md(
     include=[0, 1, 2],  # Include first three elements
@@ -203,17 +213,16 @@ print(md.to_md(
 ```
 
 Output:
+
 ```markdown
 ---
 title: Example
 ---
 
-
 # Main Header
 
-
 - [x] Task 1
-    - [ ] Subtask
+  - [ ] Subtask
 - [ ] Task 2
 ```
 
@@ -254,6 +263,7 @@ print(to_md_parser(data=data, spacer=1))
 ```
 
 Output:
+
 ```markdown
 ---
 title: Document
@@ -282,6 +292,7 @@ print(md.md_list)
 ```
 
 Output:
+
 ```python
 [
     {
@@ -308,6 +319,7 @@ print(md.md_list)
 ```
 
 Output:
+
 ```python
 [
     {
@@ -348,6 +360,7 @@ print(md.md_list)
 ```
 
 Output:
+
 ```python
 [
     {
@@ -407,6 +420,7 @@ print(md.md_list)
 ```
 
 Output:
+
 ```python
 [
     {
@@ -437,6 +451,7 @@ print(md.md_list)
 ```
 
 Output:
+
 ```python
 [
     {
@@ -471,6 +486,7 @@ print(md.md_list)
 ```
 
 Output:
+
 ```python
 [
     {
@@ -507,6 +523,7 @@ print(md.md_list)
 ```
 
 Output:
+
 ```python
 [
     {
@@ -519,9 +536,11 @@ Output:
 ```
 
 ## Limitations
+
 - Some extended markdown flavors might not be supported
 - Inline formatting (bold, italic, links) is currently not parsed
 - Table alignment specifications are not preserved
 
 ## Contributing
+
 Contributions are welcome! Please feel free to submit a Pull Request or open an issue.
