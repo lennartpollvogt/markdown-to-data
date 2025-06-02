@@ -19,6 +19,7 @@ Convert markdown and its elements (tables, lists, code, etc.) into structured, e
 - [x] Provide comprehensive documentation
 - [x] Add more test coverage --> 215 test cases
 - [x] Publish on PyPI
+- [ ] CLI tool
 - [ ] Align with edge cases of [Common Markdown Specification](https://spec.commonmark.org/0.31.2/)
 
 ## Quick Overview
@@ -147,13 +148,60 @@ print(md.md_elements)
 
 ```python
 {
-    'metadata': {'count': 1, 'positions': [0], 'variants': set()},
-    'header': {'count': 2, 'positions': [1, 3], 'variants': set()},
-    'list': {'count': 1, 'positions': [2], 'variants': {'ul'}},
-    'table': {'count': 1, 'positions': [4], 'variants': set()},
-    'code': {'count': 1, 'positions': [5], 'variants': {'python'}}
+    'metadata': {
+        'count': 1, 
+        'positions': [0], 
+        'variants': ['3_fields'],
+        'summary': {}
+    },
+    'header': {
+        'count': 2, 
+        'positions': [1, 3], 
+        'variants': ['h1', 'h2'],
+        'summary': {
+            'levels': {1: 1, 2: 1}
+        }
+    },
+    'list': {
+        'count': 1, 
+        'positions': [2], 
+        'variants': ['task', 'ul'],
+        'summary': {
+            'task_stats': {
+                'checked': 1,
+                'unchecked': 1, 
+                'total_tasks': 2
+            }
+        }
+    },
+    'table': {
+        'count': 1, 
+        'positions': [4], 
+        'variants': ['2_columns'],
+        'summary': {
+            'column_counts': [2],
+            'total_cells': 2
+        }
+    },
+    'code': {
+        'count': 1, 
+        'positions': [5], 
+        'variants': ['python'],
+        'summary': {
+            'languages': {
+                'python': 1
+            }
+        }
+    }
 }
 ```
+
+The enhanced `md_elements` property now provides:
+
+- **Extended variant tracking**: Headers show level variants (h1, h2, etc.), tables show column counts, lists identify task lists
+- **Summary statistics**: Detailed analytics for each element type including task list statistics, language distribution for code blocks, header level distribution, table cell counts, and blockquote nesting depth
+- **Better performance**: Fixed O(n²) performance issue with efficient indexing
+- **Consistent output**: Variants are sorted lists instead of sets for predictable results
 
 ### Parse back to markdown (`to_md`)
 
