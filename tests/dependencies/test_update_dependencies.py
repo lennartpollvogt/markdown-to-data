@@ -11,7 +11,7 @@ import os
 # Add the scripts directory to the path so we can import the module
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
 
-from update_dependencies import (
+from scripts.update_dependencies import (
     load_pyproject_toml,
     get_project_dependencies,
     parse_dependency,
@@ -278,8 +278,8 @@ class TestGetLatestVersion:
 class TestCheckForUpdates:
     """Test the update checking functionality."""
 
-    @patch('update_dependencies.get_latest_version')
-    @patch('update_dependencies.get_installed_version')
+    @patch('scripts.update_dependencies.get_latest_version')
+    @patch('scripts.update_dependencies.get_installed_version')
     def test_check_updates_available(self, mock_installed, mock_latest):
         """Test finding updates when newer versions are available."""
         mock_installed.side_effect = lambda pkg: {"requests": "2.28.1", "click": "8.0.0"}.get(pkg)
@@ -296,8 +296,8 @@ class TestCheckForUpdates:
         assert updates["click"]["latest"] == "8.1.0"
         assert updates["click"]["constraint"] is None
 
-    @patch('update_dependencies.get_latest_version')
-    @patch('update_dependencies.get_installed_version')
+    @patch('scripts.update_dependencies.get_latest_version')
+    @patch('scripts.update_dependencies.get_installed_version')
     def test_check_no_updates(self, mock_installed, mock_latest):
         """Test when all packages are up to date."""
         mock_installed.return_value = "2.31.0"
@@ -308,8 +308,8 @@ class TestCheckForUpdates:
 
         assert len(updates) == 0
 
-    @patch('update_dependencies.get_latest_version')
-    @patch('update_dependencies.get_installed_version')
+    @patch('scripts.update_dependencies.get_latest_version')
+    @patch('scripts.update_dependencies.get_installed_version')
     def test_check_not_installed(self, mock_installed, mock_latest):
         """Test handling of packages that are not installed."""
         mock_installed.return_value = None
@@ -320,8 +320,8 @@ class TestCheckForUpdates:
 
         assert len(updates) == 0
 
-    @patch('update_dependencies.get_latest_version')
-    @patch('update_dependencies.get_installed_version')
+    @patch('scripts.update_dependencies.get_latest_version')
+    @patch('scripts.update_dependencies.get_installed_version')
     def test_check_pypi_failure(self, mock_installed, mock_latest):
         """Test handling of PyPI API failures."""
         mock_installed.return_value = "2.28.1"
