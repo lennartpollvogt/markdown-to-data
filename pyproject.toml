@@ -30,11 +30,17 @@ classifiers = [
     "Topic :: Text Processing :: Markup :: Markdown",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = []
+dependencies = [
+    "click>=8.0.0",
+    "rich>=13.0.0",
+]
 
 [project.urls]
 Homepage = 'https://github.com/lennartpollvogt/markdown-to-data'
 Repository = 'https://github.com/lennartpollvogt/markdown-to-data'
+
+[project.scripts]
+md2data = "markdown_to_data.cli_tool.main:cli"
 
 [build-system]
 requires = ["hatchling"]
