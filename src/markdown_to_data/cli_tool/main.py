@@ -14,7 +14,7 @@ from .commands import info, convert, extract, md, tree, search
 from .utils.error_utils import CLIError, handle_cli_error
 
 
-@click.group(name='md2data')
+@click.group(name='m2d')
 @click.version_option(message='%(version)s')
 @click.option(
     '--verbose', '-v',
@@ -34,7 +34,7 @@ def cli(ctx: click.Context, verbose: bool, quiet: bool) -> None:
     Convert markdown files to structured data formats and perform various
     operations on markdown content including extraction, analysis, and conversion.
     
-    Use 'md2data COMMAND --help' for detailed help on specific commands.
+    Use 'm2d COMMAND --help' for detailed help on specific commands.
     """
     # Ensure context object exists
     ctx.ensure_object(dict)

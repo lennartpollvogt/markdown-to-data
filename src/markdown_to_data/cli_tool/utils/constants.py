@@ -10,7 +10,7 @@ from enum import Enum
 
 
 # Version and Package Information
-CLI_NAME = "md2data"
+CLI_NAME = "m2d"
 CLI_DESCRIPTION = "Convert markdown files to structured data formats and perform various operations"
 
 

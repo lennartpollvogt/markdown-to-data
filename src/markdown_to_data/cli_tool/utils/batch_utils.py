@@ -293,7 +293,7 @@ def create_batch_output_directory(
     """
     if output_dir is None:
         # Use current directory with operation-specific subdirectory
-        output_dir = f"md2data_{operation_name}_output"
+        output_dir = f"m2d_{operation_name}_output"
     
     if create_timestamped:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

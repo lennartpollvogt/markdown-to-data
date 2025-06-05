@@ -40,7 +40,7 @@ Homepage = 'https://github.com/lennartpollvogt/markdown-to-data'
 Repository = 'https://github.com/lennartpollvogt/markdown-to-data'
 
 [project.scripts]
-md2data = "markdown_to_data.cli_tool.main:cli"
+m2d = "markdown_to_data.cli_tool.main:cli"
 
 [build-system]
 requires = ["hatchling"]

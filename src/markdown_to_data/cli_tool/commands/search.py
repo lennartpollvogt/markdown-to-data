@@ -41,9 +41,9 @@ def search(ctx: click.Context, pattern: str, files: tuple, query: Optional[str],
     FILES: Markdown files to search (if not provided, searches current directory)
     
     Examples:
-        md2data search "TODO" file.md
-        md2data search --regex "^#+ " --element-type header docs/
-        md2data search --case-sensitive "Python" --recursive .
+        m2d search "TODO" file.md
+        m2d search --regex "^#+ " --element-type header docs/
+        m2d search --case-sensitive "Python" --recursive .
     """
     # TODO: Implement in Phase 5
     raise NotImplementedError("The 'search' command will be implemented in Phase 5")
