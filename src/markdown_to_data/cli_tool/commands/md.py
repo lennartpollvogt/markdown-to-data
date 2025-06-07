@@ -7,6 +7,9 @@ JSON data back to markdown format with filtering and formatting options.
 
 import click
 from typing import Optional, List, Dict, Any, cast, Union
+from datetime import datetime
+from contextlib import nullcontext
+from pathlib import Path
 
 from markdown_to_data import Markdown, to_md_parser
 from markdown_to_data.to_md.md_elements_list import MDElements
@@ -322,12 +325,18 @@ def md(ctx: click.Context, input_file: str, output: Optional[str], include: tupl
 @click.option('--spacer', type=int, default=1, help='Number of empty lines between elements')
 @click.option('--prefix', default='', help='Prefix for output filenames')
 @click.option('--recursive', '-r', is_flag=True, default=True, help='Search recursively')
+@click.option('--parallel', '-p', is_flag=True, help='Process files in parallel')
+@click.option('--max-workers', type=int, default=4, help='Maximum number of parallel workers')
+@click.option('--preserve-structure', is_flag=True, help='Preserve directory structure in output')
 @click.option('--overwrite', is_flag=True, help='Overwrite existing output files')
+@click.option('--continue-on-error', is_flag=True, help='Continue processing if individual files fail')
 @click.option('--verbose', '-v', is_flag=True, help='Verbose output')
 @click.pass_context
 def batch_md(ctx: click.Context, pattern: str, output_dir: Optional[str], include: tuple, exclude: tuple,
-             spacer: int, prefix: str, recursive: bool, overwrite: bool, verbose: bool) -> None:
-    """Convert multiple JSON files back to markdown format.
+             spacer: int, prefix: str, recursive: bool, parallel: bool, max_workers: int,
+             preserve_structure: bool, overwrite: bool, continue_on_error: bool, verbose: bool) -> None:
+    """
+    Convert multiple JSON files back to markdown format.
     
     This command processes multiple files in batch, converting JSON data
     (in md_list format) back to markdown format with optional filtering.
@@ -336,9 +345,207 @@ def batch_md(ctx: click.Context, pattern: str, output_dir: Optional[str], includ
     if the pattern specifies them.
     
     Examples:
+    
+        # Convert all JSON files in current directory
         m2d batch-md --output-dir converted/
+        
+        # Convert specific pattern with filtering
         m2d batch-md "*.json" --include "headers table" --prefix "filtered_"
-        m2d batch-md "data/*.json" --exclude "metadata" --spacer 0
+        
+        # Convert with parallel processing and preserve structure
+        m2d batch-md "data/**/*.json" --parallel --preserve-structure --output-dir results
+        
+        # Convert markdown files with filtering
+        m2d batch-md "docs/**/*.md" --exclude "metadata separator" --spacer 2
     """
-    # TODO: Implement in Phase 4
-    raise NotImplementedError("The 'batch-md' command will be implemented in Phase 4")
+    from ..utils.batch_utils import (
+        BatchProcessor, find_files_for_batch, create_batch_output_directory,
+        save_batch_results, print_batch_summary, validate_batch_options,
+        BatchErrorCollector
+    )
+    
+    console = Console()
+    
+    try:
+        # Validate options
+        validate_batch_options(
+            pattern=pattern,
+            output_dir=output_dir,
+            max_workers=max_workers,
+            overwrite=overwrite
+        )
+        
+        # Parse element filters
+        include_filters = parse_element_filters(include) if include else ['all']
+        exclude_filters = parse_element_filters(exclude) if exclude else None
+        
+        # Find files to process (default to JSON files, but support markdown too)
+        if pattern == '**/*.md':
+            # If default pattern but user wants JSON files
+            files = find_files_for_batch('**/*.json', recursive=recursive)
+            if not files and recursive:
+                # Fallback to markdown files if no JSON found
+                files = find_files_for_batch(pattern, recursive=recursive)
+        else:
+            files = find_files_for_batch(pattern, recursive=recursive)
+        
+        if not files:
+            console.print(f"❌ No files found matching pattern: {pattern}", style="red")
+            return
+            
+        if verbose:
+            console.print(f"📁 Found {len(files)} files to convert", style="blue")
+            if include_filters != ['all']:
+                console.print(f"📋 Including: {', '.join(include_filters)}", style="blue")
+            if exclude_filters:
+                console.print(f"❌ Excluding: {', '.join(exclude_filters)}", style="blue")
+            
+        # Create output directory if specified
+        if output_dir:
+            create_batch_output_directory(output_dir, overwrite=overwrite)
+        else:
+            output_dir = "."
+            
+        # Define processing function for batch processor
+        def process_single_file(file_path: str) -> Dict[str, Any]:
+            """Process a single file and return conversion result."""
+            try:
+                # Detect file type and process accordingly
+                file_type = detect_file_type(file_path)
+                
+                if file_type == 'markdown':
+                    # Process markdown file
+                    markdown_content = process_markdown_file(
+                        file_path, include_filters, exclude_filters, spacer
+                    )
+                elif file_type == 'json':
+                    # Process JSON file
+                    markdown_content = process_json_file(
+                        file_path, include_filters, exclude_filters, spacer
+                    )
+                else:
+                    raise CLIError(f"Unsupported file type for: {file_path}")
+                
+                # Determine output filename
+                input_path = Path(file_path)
+                
+                if preserve_structure:
+                    # Preserve relative directory structure
+                    relative_path = input_path.relative_to(Path.cwd())
+                    if file_type == 'json':
+                        output_file = Path(output_dir) / relative_path.with_suffix('.md')
+                    else:
+                        # For markdown files, add prefix or suffix to avoid overwriting
+                        stem = relative_path.stem
+                        suffix = relative_path.suffix
+                        new_name = f"{prefix}{stem}.converted{suffix}" if prefix else f"{stem}.converted{suffix}"
+                        output_file = Path(output_dir) / relative_path.with_name(new_name)
+                    # Ensure parent directories exist
+                    output_file.parent.mkdir(parents=True, exist_ok=True)
+                else:
+                    # Flatten to output directory
+                    if file_type == 'json':
+                        output_file = Path(output_dir) / f"{prefix}{input_path.stem}.md"
+                    else:
+                        output_file = Path(output_dir) / f"{prefix}{input_path.stem}.converted.md"
+                
+                # Write markdown file
+                write_text_file(str(output_file), markdown_content)
+                
+                # Count elements in the output
+                element_count = len([line for line in markdown_content.split('\n') if line.strip()])
+                
+                return {
+                    'input_file': file_path,
+                    'output_file': str(output_file),
+                    'file_type': file_type,
+                    'element_count': element_count,
+                    'file_size': output_file.stat().st_size if output_file.exists() else 0,
+                    'include_filters': include_filters,
+                    'exclude_filters': exclude_filters or []
+                }
+                
+            except Exception as e:
+                if not continue_on_error:
+                    raise
+                # Return error info for failed files
+                return {
+                    'input_file': file_path,
+                    'error': str(e),
+                    'status': 'failed'
+                }
+        
+        # Set up batch processor
+        processor = BatchProcessor(
+            task_name="markdown conversion",
+            max_workers=max_workers if parallel else 1,
+            show_progress=not ctx.obj.get('quiet', False)
+        )
+        
+        # Process files
+        with console.status("[bold blue]Converting to markdown...") if ctx.obj.get('quiet', False) else nullcontext():
+            result = processor.process_files(files, process_single_file)
+            
+        # Handle successful conversions
+        if result.successes and verbose:
+            total_elements = sum(
+                success['result'].get('element_count', 0) 
+                for success in result.successes 
+                if 'element_count' in success['result']
+            )
+            total_size = sum(
+                success['result'].get('file_size', 0)
+                for success in result.successes
+                if 'file_size' in success['result']
+            )
+            
+            console.print(f"📊 Generated {total_elements} total lines of markdown", style="dim")
+            console.print(f"💾 Created {format_file_size(total_size)} of markdown files", style="dim")
+            
+        # Print summary
+        if not ctx.obj.get('quiet', False):
+            print_batch_summary(result, "Markdown conversion")
+            
+        # Handle errors
+        if result.errors:
+            error_collector = BatchErrorCollector()
+            for error in result.errors:
+                error_collector.add_error(error['file'], error['error'])
+                
+            if not continue_on_error:
+                console.print(f"\n❌ {len(result.errors)} files failed to convert", style="red")
+                error_collector.print_error_summary()
+                
+            # Save error log if output directory specified
+            if output_dir:
+                error_log_file = Path(output_dir) / "markdown_conversion_errors.txt"
+                error_collector.save_error_log(str(error_log_file))
+                if verbose:
+                    console.print(f"📝 Error log saved to: {error_log_file}", style="yellow")
+                    
+        if verbose:
+            console.print(f"✅ Batch markdown conversion completed: {len(result.successes)} successful, {len(result.errors)} failed", style="green")
+            
+    except CLIError:
+        raise
+    except Exception as e:
+        raise CLIError(f"Batch markdown conversion failed: {str(e)}")
+
+
+def write_text_file(file_path: str, content: str) -> None:
+    """Write text content to a file."""
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+    except Exception as e:
+        raise CLIError(f"Failed to write text file '{file_path}': {str(e)}")
+
+
+def format_file_size(size_bytes: int) -> str:
+    """Format file size in human-readable format."""
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    elif size_bytes < 1024 * 1024:
+        return f"{size_bytes / 1024:.1f} KB"
+    else:
+        return f"{size_bytes / (1024 * 1024):.1f} MB"

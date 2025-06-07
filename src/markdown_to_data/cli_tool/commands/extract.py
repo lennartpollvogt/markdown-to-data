@@ -7,6 +7,8 @@ specific elements from markdown files.
 
 import click
 from typing import Optional, List, Dict, Any, Set, Union
+from datetime import datetime
+from contextlib import nullcontext
 
 from markdown_to_data import Markdown
 from ..utils.constants import SUPPORTED_ELEMENT_TYPES
@@ -298,12 +300,295 @@ def extract(ctx: click.Context, input_file: str, elements: tuple, output: Option
 @click.option('--group-by-type', is_flag=True, help='Group extracted elements by type')
 @click.option('--include-summary', is_flag=True, default=True, help='Include extraction summary in output')
 @click.option('--recursive', '-r', is_flag=True, default=True, help='Search recursively')
+@click.option('--parallel', '-p', is_flag=True, help='Process files in parallel')
+@click.option('--max-workers', type=int, default=4, help='Maximum number of parallel workers')
+@click.option('--aggregate', '-a', is_flag=True, help='Generate aggregated extraction results')
+@click.option('--preserve-structure', is_flag=True, help='Preserve directory structure in output')
 @click.option('--overwrite', is_flag=True, help='Overwrite existing output files')
+@click.option('--continue-on-error', is_flag=True, help='Continue processing if individual files fail')
 @click.option('--verbose', '-v', is_flag=True, help='Verbose output')
 @click.pass_context
 def batch_extract(ctx: click.Context, pattern: str, elements: tuple, output_dir: Optional[str],
                  format: str, indent: int, compact: bool, combine: bool, group_by_type: bool,
-                 include_summary: bool, recursive: bool, overwrite: bool, verbose: bool) -> None:
-    """Extract specific elements from multiple markdown files."""
-    # TODO: Implement in Phase 4
-    raise NotImplementedError("The 'batch-extract' command will be implemented in Phase 4")
+                 include_summary: bool, recursive: bool, parallel: bool, max_workers: int,
+                 aggregate: bool, preserve_structure: bool, overwrite: bool, 
+                 continue_on_error: bool, verbose: bool) -> None:
+    """
+    Extract specific elements from multiple markdown files.
+    
+    PATTERN specifies the file pattern to search for (default: **/*.md).
+    Supports glob patterns like '*.md', 'docs/**/*.md', etc.
+    
+    Examples:
+    
+        # Extract tables from all markdown files
+        m2d batch-extract --elements "table"
+        
+        # Extract headers and lists with output directory
+        m2d batch-extract "docs/**/*.md" --elements "headers list" --output-dir extracted
+        
+        # Extract with parallel processing and aggregation
+        m2d batch-extract --elements "table code" --parallel --aggregate --output-dir results
+        
+        # Extract and group by type
+        m2d batch-extract --elements "h1 h2 paragraph" --group-by-type --output-dir results
+    """
+    from ..utils.batch_utils import (
+        BatchProcessor, find_files_for_batch, create_batch_output_directory,
+        save_batch_results, print_batch_summary, validate_batch_options,
+        BatchErrorCollector
+    )
+    
+    console = Console()
+    
+    try:
+        # Validate options
+        validate_batch_options(
+            pattern=pattern,
+            output_dir=output_dir,
+            max_workers=max_workers,
+            overwrite=overwrite
+        )
+        
+        # Validate elements argument
+        if not elements:
+            raise CLIError("No element types specified. Use --elements to specify what to extract.")
+            
+        # Parse and validate element types
+        element_types = parse_element_types(elements)
+        
+        # Find files to process
+        files = find_files_for_batch(pattern, recursive=recursive)
+        
+        if not files:
+            console.print(f"❌ No files found matching pattern: {pattern}", style="red")
+            return
+            
+        if verbose:
+            console.print(f"📁 Found {len(files)} files to process", style="blue")
+            console.print(f"🎯 Extracting element types: {', '.join(sorted(element_types))}", style="blue")
+            
+        # Create output directory if specified
+        if output_dir:
+            create_batch_output_directory(output_dir, overwrite=overwrite)
+        else:
+            output_dir = "."
+            
+        # Define processing function for batch processor
+        def process_single_file(file_path: str) -> Dict[str, Any]:
+            """Process a single file and return extraction result."""
+            try:
+                # Load markdown
+                md = Markdown(file_path)
+                
+                # Filter elements by type
+                filtered_data = filter_elements_by_type(md.md_list, element_types)
+                
+                # Group by type if requested (only for individual files, not aggregate)
+                if group_by_type and not aggregate:
+                    result_data = group_elements_by_type(filtered_data)
+                else:
+                    result_data = filtered_data
+                
+                # Create extraction summary if requested
+                extraction_summary = None
+                if include_summary:
+                    extraction_summary = create_extraction_summary(
+                        original_data=md.md_list,
+                        filtered_data=filtered_data,
+                        element_types=element_types
+                    )
+                
+                # Prepare final output
+                output_data = {
+                    'extracted_elements': result_data
+                }
+                
+                if include_summary:
+                    output_data['extraction_summary'] = extraction_summary
+                
+                # Determine output filename
+                input_path = Path(file_path)
+                
+                if preserve_structure:
+                    # Preserve relative directory structure
+                    relative_path = input_path.relative_to(Path.cwd())
+                    output_file = Path(output_dir) / relative_path.with_suffix('.extracted.json')
+                    # Ensure parent directories exist
+                    output_file.parent.mkdir(parents=True, exist_ok=True)
+                else:
+                    # Flatten to output directory
+                    output_file = Path(output_dir) / f"{input_path.stem}.extracted.json"
+                
+                # Write JSON file
+                write_json_file(
+                    str(output_file),
+                    output_data,
+                    indent=None if compact else indent
+                )
+                
+                # Return result info
+                extracted_count = len(filtered_data)
+                
+                return {
+                    'input_file': file_path,
+                    'output_file': str(output_file),
+                    'element_types': sorted(list(element_types)),
+                    'extracted_count': extracted_count,
+                    'extracted_elements': filtered_data,  # For aggregation
+                    'extraction_summary': extraction_summary,
+                    'file_size': output_file.stat().st_size if output_file.exists() else 0
+                }
+                
+            except Exception as e:
+                if not continue_on_error:
+                    raise
+                # Return error info for failed files
+                return {
+                    'input_file': file_path,
+                    'error': str(e),
+                    'status': 'failed'
+                }
+        
+        # Set up batch processor
+        processor = BatchProcessor(
+            task_name="element extraction",
+            max_workers=max_workers if parallel else 1,
+            show_progress=not ctx.obj.get('quiet', False)
+        )
+        
+        # Process files
+        with console.status("[bold blue]Extracting elements...") if ctx.obj.get('quiet', False) else nullcontext():
+            result = processor.process_files(files, process_single_file)
+            
+        # Handle successful extractions
+        if result.successes:
+            # Calculate statistics
+            total_extracted = sum(
+                success['result'].get('extracted_count', 0) 
+                for success in result.successes 
+                if 'extracted_count' in success['result']
+            )
+            total_size = sum(
+                success['result'].get('file_size', 0)
+                for success in result.successes
+                if 'file_size' in success['result']
+            )
+            
+            if verbose:
+                console.print(f"📊 Extracted {total_extracted} total elements", style="dim")
+                console.print(f"💾 Generated {format_file_size(total_size)} of extracted data", style="dim")
+            
+            # Generate aggregated results if requested
+            if aggregate and output_dir:
+                aggregated_data = create_aggregated_extraction_results(
+                    result.successes, element_types, group_by_type
+                )
+                aggregate_file = Path(output_dir) / "aggregated_extractions.json"
+                
+                try:
+                    write_json_file(
+                        str(aggregate_file), 
+                        aggregated_data, 
+                        indent=None if compact else indent
+                    )
+                    if not ctx.obj.get('quiet', False):
+                        console.print(f"📊 Aggregated extractions saved to: {aggregate_file}", style="green")
+                except Exception as e:
+                    console.print(f"❌ Failed to save aggregated extractions: {e}", style="red")
+                    
+        # Print summary
+        if not ctx.obj.get('quiet', False):
+            print_batch_summary(result, "Element extraction")
+            
+        # Handle errors
+        if result.errors:
+            error_collector = BatchErrorCollector()
+            for error in result.errors:
+                error_collector.add_error(error['file'], error['error'])
+                
+            if not continue_on_error:
+                console.print(f"\n❌ {len(result.errors)} files failed to process", style="red")
+                error_collector.print_error_summary()
+                
+            # Save error log if output directory specified
+            if output_dir:
+                error_log_file = Path(output_dir) / "extraction_errors.txt"
+                error_collector.save_error_log(str(error_log_file))
+                if verbose:
+                    console.print(f"📝 Error log saved to: {error_log_file}", style="yellow")
+                    
+        if verbose:
+            console.print(f"✅ Batch extraction completed: {len(result.successes)} successful, {len(result.errors)} failed", style="green")
+            
+    except CLIError:
+        raise
+    except Exception as e:
+        raise CLIError(f"Batch extraction failed: {str(e)}")
+
+
+def create_aggregated_extraction_results(successes: List[Dict[str, Any]], 
+                                       element_types: Set[str], 
+                                       group_by_type: bool) -> Dict[str, Any]:
+    """Create aggregated extraction results from all processed files."""
+    if not successes:
+        return {}
+        
+    aggregated = {
+        'summary': {
+            'total_files': len(successes),
+            'processed_at': datetime.now().isoformat(),
+            'element_types_requested': sorted(list(element_types)),
+        },
+        'statistics': {
+            'total_elements_extracted': 0,
+            'elements_per_file': {},
+            'element_type_counts': {},
+        },
+    }
+    
+    # Collect all extracted elements
+    all_elements = []
+    
+    for success in successes:
+        result = success['result']
+        
+        # Skip error files
+        if 'error' in result:
+            continue
+            
+        file_path = result.get('input_file', '')
+        extracted_count = result.get('extracted_count', 0)
+        extracted_elements = result.get('extracted_elements', [])
+        
+        # Update statistics
+        aggregated['statistics']['total_elements_extracted'] += extracted_count
+        aggregated['statistics']['elements_per_file'][file_path] = extracted_count
+        
+        # Add elements to aggregated collection
+        all_elements.extend(extracted_elements)
+        
+        # Count element types
+        for element in extracted_elements:
+            if isinstance(element, dict):
+                element_type = next(iter(element.keys()))
+                aggregated['statistics']['element_type_counts'][element_type] = \
+                    aggregated['statistics']['element_type_counts'].get(element_type, 0) + 1
+    
+    # Organize extracted elements
+    if group_by_type:
+        aggregated['extracted_elements'] = group_elements_by_type(all_elements)
+    else:
+        aggregated['extracted_elements'] = all_elements
+        
+    return aggregated
+
+
+def format_file_size(size_bytes: int) -> str:
+    """Format file size in human-readable format."""
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    elif size_bytes < 1024 * 1024:
+        return f"{size_bytes / 1024:.1f} KB"
+    else:
+        return f"{size_bytes / (1024 * 1024):.1f} MB"

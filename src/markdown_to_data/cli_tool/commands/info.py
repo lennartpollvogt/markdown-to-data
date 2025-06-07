@@ -9,6 +9,8 @@ import click
 import re
 from typing import Optional, Dict, Any, List
 from pathlib import Path
+from datetime import datetime
+from contextlib import nullcontext
 
 from markdown_to_data import Markdown
 from ..utils.constants import COMMAND_DESCRIPTIONS, SUPPORTED_ELEMENT_TYPES
@@ -224,9 +226,224 @@ def info(ctx: click.Context, input_file: str, include: Optional[str], output: Op
 @click.option('--output-dir', type=click.Path(), help='Output directory for results')
 @click.option('--format', '-f', default='json', help='Output format')
 @click.option('--recursive', '-r', is_flag=True, default=True, help='Search recursively')
+@click.option('--parallel', '-p', is_flag=True, help='Process files in parallel')
+@click.option('--max-workers', type=int, default=4, help='Maximum number of parallel workers')
+@click.option('--aggregate', '-a', is_flag=True, help='Generate aggregated summary')
+@click.option('--overwrite', is_flag=True, help='Overwrite existing output files')
+@click.option('--continue-on-error', is_flag=True, help='Continue processing if individual files fail')
 @click.option('--verbose', '-v', is_flag=True, help='Verbose output')
 @click.pass_context
-def batch_info(ctx: click.Context, pattern: str, output_dir: Optional[str], format: str, recursive: bool, verbose: bool) -> None:
-    """Extract information from multiple markdown files."""
-    # TODO: Implement in Phase 4
-    raise NotImplementedError("The 'batch-info' command will be implemented in Phase 4")
+def batch_info(ctx: click.Context, pattern: str, output_dir: Optional[str], format: str, recursive: bool, 
+               parallel: bool, max_workers: int, aggregate: bool, overwrite: bool, 
+               continue_on_error: bool, verbose: bool) -> None:
+    """
+    Extract information from multiple markdown files.
+    
+    PATTERN specifies the file pattern to search for (default: **/*.md).
+    Supports glob patterns like '*.md', 'docs/**/*.md', etc.
+    
+    Examples:
+    
+        # Process all markdown files in current directory and subdirectories
+        m2d batch-info
+        
+        # Process specific pattern with output directory
+        m2d batch-info "docs/**/*.md" --output-dir results
+        
+        # Process with parallel execution and aggregation
+        m2d batch-info --parallel --aggregate --output-dir results
+        
+        # Process with custom worker count
+        m2d batch-info --parallel --max-workers 8
+    """
+    from ..utils.batch_utils import (
+        BatchProcessor, find_files_for_batch, create_batch_output_directory,
+        save_batch_results, print_batch_summary, validate_batch_options,
+        BatchErrorCollector
+    )
+    
+    console = Console()
+    
+    try:
+        # Validate options
+        validate_batch_options(
+            pattern=pattern,
+            output_dir=output_dir,
+            max_workers=max_workers,
+            overwrite=overwrite
+        )
+        
+        # Find files to process
+        files = find_files_for_batch(pattern, recursive=recursive)
+        
+        if not files:
+            console.print(f"❌ No files found matching pattern: {pattern}", style="red")
+            return
+            
+        if verbose:
+            console.print(f"📁 Found {len(files)} files to process", style="blue")
+            
+        # Create output directory if specified
+        if output_dir:
+            create_batch_output_directory(output_dir, overwrite=overwrite)
+            
+        # Define processing function for batch processor
+        def process_single_file(file_path: str) -> Dict[str, Any]:
+            """Process a single file and return its info."""
+            try:
+                # Use the same logic as the single info command
+                info = extract_file_info(file_path, {
+                    'metadata': True,
+                    'headers': True,
+                    'elements': True,
+                    'statistics': True
+                })
+                
+                # Add file path to the result
+                info['file_path'] = file_path
+                return info
+                
+            except Exception as e:
+                if not continue_on_error:
+                    raise
+                # Return error info for failed files
+                return {
+                    'file_path': file_path,
+                    'error': str(e),
+                    'status': 'failed'
+                }
+        
+        # Set up batch processor
+        processor = BatchProcessor(
+            task_name="info extraction",
+            max_workers=max_workers if parallel else 1,
+            show_progress=not ctx.obj.get('quiet', False)
+        )
+        
+        # Process files
+        with console.status("[bold blue]Processing files...") if ctx.obj.get('quiet', False) else nullcontext():
+            result = processor.process_files(files, process_single_file)
+            
+        # Handle results
+        if output_dir:
+            # Save individual results
+            for success in result.successes:
+                file_info = success['result']
+                file_path = file_info['file_path']
+                
+                # Create relative path for output filename
+                relative_path = Path(file_path).name
+                output_file = Path(output_dir) / f"{relative_path}.info.json"
+                
+                try:
+                    write_json_file(str(output_file), file_info)
+                    if verbose:
+                        console.print(f"💾 Saved: {output_file}", style="green")
+                except Exception as e:
+                    console.print(f"❌ Failed to save {output_file}: {e}", style="red")
+            
+            # Save aggregated results if requested
+            if aggregate:
+                aggregated_data = create_aggregated_info_summary(result.successes)
+                aggregate_file = Path(output_dir) / "aggregated_info.json"
+                
+                try:
+                    write_json_file(str(aggregate_file), aggregated_data)
+                    if not ctx.obj.get('quiet', False):
+                        console.print(f"📊 Aggregated summary saved to: {aggregate_file}", style="green")
+                except Exception as e:
+                    console.print(f"❌ Failed to save aggregated summary: {e}", style="red")
+                    
+        # Print summary
+        if not ctx.obj.get('quiet', False):
+            print_batch_summary(result, "Information extraction")
+            
+        # Handle errors
+        if result.errors:
+            error_collector = BatchErrorCollector()
+            for error in result.errors:
+                error_collector.add_error(error['file'], error['error'])
+                
+            if not continue_on_error:
+                console.print(f"\n❌ {len(result.errors)} files failed to process", style="red")
+                error_collector.print_error_summary()
+                
+            # Save error log if output directory specified
+            if output_dir:
+                error_log_file = Path(output_dir) / "error_log.txt"
+                error_collector.save_error_log(str(error_log_file))
+                if verbose:
+                    console.print(f"📝 Error log saved to: {error_log_file}", style="yellow")
+                    
+        if verbose:
+            console.print(f"✅ Batch processing completed: {len(result.successes)} successful, {len(result.errors)} failed", style="green")
+            
+    except CLIError:
+        raise
+    except Exception as e:
+        raise CLIError(f"Batch info processing failed: {str(e)}")
+
+
+def create_aggregated_info_summary(successes: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Create an aggregated summary of all processed files."""
+    if not successes:
+        return {}
+        
+    aggregated = {
+        'summary': {
+            'total_files': len(successes),
+            'processed_at': datetime.now().isoformat(),
+        },
+        'global_statistics': {
+            'total_headers': 0,
+            'total_elements': 0,
+            'header_levels': {},
+            'element_types': {},
+            'files_with_metadata': 0,
+            'files_with_headers': 0,
+        },
+        'files': []
+    }
+    
+    # Aggregate statistics
+    for success in successes:
+        file_info = success['result']
+        
+        # Skip error files
+        if 'error' in file_info:
+            continue
+            
+        # Add file summary
+        file_summary = {
+            'file_path': file_info.get('file_path', ''),
+            'has_metadata': bool(file_info.get('metadata')),
+            'header_count': len(file_info.get('headers', [])),
+            'element_count': sum(info.get('count', 0) for info in file_info.get('elements', {}).values())
+        }
+        aggregated['files'].append(file_summary)
+        
+        # Update global statistics
+        if file_info.get('metadata'):
+            aggregated['global_statistics']['files_with_metadata'] += 1
+            
+        headers = file_info.get('headers', [])
+        if headers:
+            aggregated['global_statistics']['files_with_headers'] += 1
+            aggregated['global_statistics']['total_headers'] += len(headers)
+            
+            # Count header levels
+            for header in headers:
+                level = header.get('level', 1)
+                level_key = f'h{level}'
+                aggregated['global_statistics']['header_levels'][level_key] = \
+                    aggregated['global_statistics']['header_levels'].get(level_key, 0) + 1
+                    
+        # Count element types
+        elements = file_info.get('elements', {})
+        for element_type, element_info in elements.items():
+            count = element_info.get('count', 0)
+            aggregated['global_statistics']['total_elements'] += count
+            aggregated['global_statistics']['element_types'][element_type] = \
+                aggregated['global_statistics']['element_types'].get(element_type, 0) + count
+                
+    return aggregated
