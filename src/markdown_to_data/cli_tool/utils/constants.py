@@ -204,6 +204,12 @@ VALIDATION_RULES = {
     'max_depth': 20,
 }
 
+# Element type validation helpers
+ELEMENT_TYPE_ALIASES = {
+    'headers': ['header', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+    'all': SUPPORTED_ELEMENT_TYPES,
+}
+
 
 # Rich Theme Settings
 RICH_THEME = {

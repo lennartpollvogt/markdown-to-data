@@ -6,7 +6,6 @@ for all markdown-to-data commands.
 """
 
 import click
-from typing import Optional
 
 # Import individual command modules
 from .commands import info, convert, extract, md, tree, search
@@ -30,19 +29,19 @@ from .utils.error_utils import CLIError, handle_cli_error
 def cli(ctx: click.Context, verbose: bool, quiet: bool) -> None:
     """
     markdown-to-data CLI tool
-    
+
     Convert markdown files to structured data formats and perform various
     operations on markdown content including extraction, analysis, and conversion.
-    
+
     Use 'm2d COMMAND --help' for detailed help on specific commands.
     """
     # Ensure context object exists
     ctx.ensure_object(dict)
-    
+
     # Store global options in context
     ctx.obj['verbose'] = verbose
     ctx.obj['quiet'] = quiet
-    
+
     # Validate conflicting options
     if verbose and quiet:
         raise click.BadParameter("Cannot use both --verbose and --quiet options")

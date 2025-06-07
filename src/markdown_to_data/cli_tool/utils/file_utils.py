@@ -7,15 +7,16 @@ reading, writing, and path handling across all CLI commands.
 
 import os
 import json
+import fnmatch
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Union, Iterator, Tuple
+from typing import List, Dict, Any, Optional, Union, Tuple
 import glob
 from rich.console import Console
 from rich.progress import Progress, TaskID
 
 from .error_utils import (
-    FileNotFoundError, InvalidFileError, ProcessingError,
-    validate_file_exists, validate_markdown_file, validate_json_file
+    InvalidFileError, ProcessingError,
+    validate_markdown_file, validate_json_file
 )
 
 console = Console()
@@ -96,7 +97,7 @@ def read_json_file(filepath: str) -> Dict[str, Any]:
         raise ProcessingError(filepath, "read JSON", str(e))
 
 
-def write_json_file(filepath: str, data: Dict[str, Any], indent: Optional[int] = 2) -> None:
+def write_json_file(filepath: str, data: Union[Dict[str, Any], List[Any]], indent: Optional[int] = 2) -> None:
     """
     Write data to JSON file safely.
     
@@ -179,7 +180,7 @@ def find_markdown_files(
     for filepath in files:
         excluded = False
         for exclude_pattern in exclude_patterns:
-            if glob.fnmatch.fnmatch(filepath, exclude_pattern):
+            if fnmatch.fnmatch(filepath, exclude_pattern):
                 excluded = True
                 break
         
@@ -229,7 +230,7 @@ def find_json_files(
     for filepath in files:
         excluded = False
         for exclude_pattern in exclude_patterns:
-            if glob.fnmatch.fnmatch(filepath, exclude_pattern):
+            if fnmatch.fnmatch(filepath, exclude_pattern):
                 excluded = True
                 break
         
@@ -257,10 +258,10 @@ def generate_output_path(
     Returns:
         Generated output file path
     """
-    input_path = Path(input_path)
+    input_path_obj = Path(input_path)
     
     # Create output filename
-    base_name = input_path.stem
+    base_name = input_path_obj.stem
     if suffix:
         output_filename = f"{base_name}{suffix}{output_extension}"
     else:
@@ -270,7 +271,7 @@ def generate_output_path(
     if output_dir:
         return str(Path(output_dir) / output_filename)
     else:
-        return str(input_path.parent / output_filename)
+        return str(input_path_obj.parent / output_filename)
 
 
 def get_file_info(filepath: str) -> Dict[str, Any]:
@@ -333,10 +334,10 @@ def validate_output_path(output_path: str, overwrite: bool = False) -> None:
         InvalidFileError: If output path is invalid
         ProcessingError: If file exists and overwrite is False
     """
-    output_path = Path(output_path)
+    output_path_obj = Path(output_path)
     
     # Check if parent directory is writable
-    parent_dir = output_path.parent
+    parent_dir = output_path_obj.parent
     if not parent_dir.exists():
         try:
             parent_dir.mkdir(parents=True, exist_ok=True)
@@ -344,12 +345,12 @@ def validate_output_path(output_path: str, overwrite: bool = False) -> None:
             raise ProcessingError(str(parent_dir), "create output directory", str(e))
     
     if not os.access(parent_dir, os.W_OK):
-        raise InvalidFileError(str(output_path), "Output directory is not writable")
+        raise InvalidFileError(output_path, "Output directory is not writable")
     
     # Check if file exists and handle overwrite
-    if output_path.exists() and not overwrite:
+    if output_path_obj.exists() and not overwrite:
         raise ProcessingError(
-            str(output_path), 
+            output_path, 
             "write", 
             "File already exists (use --overwrite to replace)"
         )
@@ -392,7 +393,7 @@ class FileProcessor:
         """
         return FileProcessorContext(self, filepath)
     
-    def update_progress(self, filepath: str, success: bool, error_msg: str = None):
+    def update_progress(self, filepath: str, success: bool, error_msg: Optional[str] = None):
         """
         Update progress for a processed file.
         
@@ -447,7 +448,7 @@ class FileProcessorContext:
         self.processor.update_progress(
             self.filepath, 
             self.success, 
-            self.error_msg
+            self.error_msg or ""
         )
         
         # Don't suppress exceptions

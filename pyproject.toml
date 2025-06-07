@@ -30,10 +30,7 @@ classifiers = [
     "Topic :: Text Processing :: Markup :: Markdown",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = [
-    "click>=8.0.0",
-    "rich>=13.0.0",
-]
+dependencies = ["click>=8.0.0", "rich>=13.0.0"]
 
 [project.urls]
 Homepage = 'https://github.com/lennartpollvogt/markdown-to-data'
@@ -47,8 +44,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = [
-    "pytest>=8.3.3",
-    "rich>=13.9.4",
-    "ruff>=0.8.4",
-]
+dev = ["pytest>=8.3.3", "rich>=13.9.4", "ruff>=0.8.4"]
+
+[tool.hatchling.build.targets.wheel]
+packages = ["src/markdown_to_data"]
