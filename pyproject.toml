@@ -19,25 +19,41 @@ keywords = [
     "json",
     "tables",
     "lists",
-    "tables",
+    "cli",
+    "command-line",
+    "conversion",
+    "extraction",
 ]
 classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python",
     "License :: OSI Approved :: MIT License",
     "Intended Audience :: Developers",
     "Topic :: Text Processing :: Markup :: Markdown",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Environment :: Console",
+    "Topic :: Utilities",
 ]
-dependencies = ["click>=8.0.0", "rich>=13.0.0"]
+dependencies = []
 
 [project.urls]
 Homepage = 'https://github.com/lennartpollvogt/markdown-to-data'
 Repository = 'https://github.com/lennartpollvogt/markdown-to-data'
 
+[project.optional-dependencies]
+cli = [
+    "click>=8.0.0",
+    "rich>=13.0.0", 
+    "psutil>=5.8.0",
+]
+
 [project.scripts]
-m2d = "markdown_to_data.cli_tool.main:cli"
+m2d = "markdown_to_data.cli_tool.main:main"
+
 
 [build-system]
 requires = ["hatchling"]
@@ -45,6 +61,8 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = ["pytest>=8.3.3", "rich>=13.9.4", "ruff>=0.8.4"]
+test = ["pytest>=8.3.3", "pytest-cov>=4.0.0"]
+cli = ["click>=8.0.0", "rich>=13.0.0", "psutil>=5.8.0"]
 
 [tool.hatchling.build.targets.wheel]
 packages = ["src/markdown_to_data"]

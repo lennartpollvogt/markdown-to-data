@@ -8,18 +8,68 @@ reading, writing, and path handling across all CLI commands.
 import os
 import json
 import fnmatch
+import psutil
+import gc
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Union, Tuple
+from typing import List, Dict, Any, Optional, Union, Tuple, Iterator, Generator
 import glob
 from rich.console import Console
 from rich.progress import Progress, TaskID
 
 from .error_utils import (
     InvalidFileError, ProcessingError,
-    validate_markdown_file, validate_json_file
+    validate_markdown_file, validate_json_file, cli_logger
 )
+from .constants import FILE_SIZE_LIMITS
 
 console = Console()
+
+
+class MemoryMonitor:
+    """Monitor memory usage during file processing operations."""
+    
+    def __init__(self, warning_threshold_mb: int = 512):
+        self.warning_threshold_mb = warning_threshold_mb
+        self.process = psutil.Process()
+        self.initial_memory = self.get_memory_usage()
+    
+    def get_memory_usage(self) -> Dict[str, float]:
+        """Get current memory usage statistics."""
+        memory_info = self.process.memory_info()
+        return {
+            'rss_mb': memory_info.rss / (1024 * 1024),  # Resident Set Size
+            'vms_mb': memory_info.vms / (1024 * 1024),  # Virtual Memory Size
+            'percent': self.process.memory_percent()
+        }
+    
+    def check_memory_usage(self) -> bool:
+        """
+        Check if memory usage exceeds warning threshold.
+        
+        Returns:
+            True if memory usage is acceptable, False if threshold exceeded
+        """
+        current_memory = self.get_memory_usage()
+        
+        if current_memory['rss_mb'] > self.warning_threshold_mb:
+            cli_logger.warning(
+                f"High memory usage detected: {current_memory['rss_mb']:.1f}MB "
+                f"(threshold: {self.warning_threshold_mb}MB)"
+            )
+            return False
+        
+        return True
+    
+    def force_garbage_collection(self) -> Dict[str, float]:
+        """Force garbage collection and return memory statistics."""
+        before_memory = self.get_memory_usage()
+        gc.collect()
+        after_memory = self.get_memory_usage()
+        
+        freed_mb = before_memory['rss_mb'] - after_memory['rss_mb']
+        cli_logger.debug(f"Garbage collection freed {freed_mb:.1f}MB")
+        
+        return after_memory
 
 
 def get_absolute_path(filepath: str) -> str:
@@ -51,12 +101,13 @@ def ensure_directory_exists(dirpath: str) -> None:
         raise ProcessingError(dirpath, "create directory", str(e))
 
 
-def read_markdown_file(filepath: str) -> str:
+def read_markdown_file(filepath: str, stream_large_files: bool = True) -> str:
     """
-    Read markdown file content safely.
+    Read markdown file content safely with optional streaming for large files.
     
     Args:
         filepath: Path to markdown file
+        stream_large_files: Whether to use streaming for large files
         
     Returns:
         File content as string
@@ -67,19 +118,48 @@ def read_markdown_file(filepath: str) -> str:
     """
     validate_markdown_file(filepath)
     
+    # Check file size
+    file_size = Path(filepath).stat().st_size
+    
+    # Warn about large files
+    if file_size > FILE_SIZE_LIMITS['warning_threshold']:
+        size_mb = file_size / (1024 * 1024)
+        cli_logger.warning(f"Reading large file ({size_mb:.1f}MB): {filepath}")
+    
+    # Refuse extremely large files
+    if file_size > FILE_SIZE_LIMITS['max_file_size']:
+        size_mb = file_size / (1024 * 1024)
+        raise InvalidFileError(
+            filepath, 
+            f"File too large ({size_mb:.1f}MB). Maximum allowed: {FILE_SIZE_LIMITS['max_file_size'] / (1024 * 1024):.1f}MB"
+        )
+    
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            return f.read()
+        if stream_large_files and file_size > FILE_SIZE_LIMITS['warning_threshold']:
+            # Stream large files in chunks
+            content_chunks = []
+            with open(filepath, 'r', encoding='utf-8') as f:
+                while True:
+                    chunk = f.read(8192)  # 8KB chunks
+                    if not chunk:
+                        break
+                    content_chunks.append(chunk)
+            return ''.join(content_chunks)
+        else:
+            # Read normally for smaller files
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return f.read()
     except Exception as e:
         raise ProcessingError(filepath, "read", str(e))
 
 
-def read_json_file(filepath: str) -> Dict[str, Any]:
+def read_json_file(filepath: str, stream_large_files: bool = True) -> Dict[str, Any]:
     """
-    Read JSON file content safely.
+    Read JSON file content safely with memory monitoring.
     
     Args:
         filepath: Path to JSON file
+        stream_large_files: Whether to use streaming for large files
         
     Returns:
         Parsed JSON data
@@ -90,6 +170,22 @@ def read_json_file(filepath: str) -> Dict[str, Any]:
     """
     validate_json_file(filepath)
     
+    # Check file size
+    file_size = Path(filepath).stat().st_size
+    
+    # Warn about large files
+    if file_size > FILE_SIZE_LIMITS['warning_threshold']:
+        size_mb = file_size / (1024 * 1024)
+        cli_logger.warning(f"Reading large JSON file ({size_mb:.1f}MB): {filepath}")
+    
+    # Refuse extremely large files
+    if file_size > FILE_SIZE_LIMITS['max_file_size']:
+        size_mb = file_size / (1024 * 1024)
+        raise InvalidFileError(
+            filepath, 
+            f"JSON file too large ({size_mb:.1f}MB). Maximum allowed: {FILE_SIZE_LIMITS['max_file_size'] / (1024 * 1024):.1f}MB"
+        )
+    
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -97,25 +193,37 @@ def read_json_file(filepath: str) -> Dict[str, Any]:
         raise ProcessingError(filepath, "read JSON", str(e))
 
 
-def write_json_file(filepath: str, data: Union[Dict[str, Any], List[Any]], indent: Optional[int] = 2) -> None:
+def write_json_file(filepath: str, data: Union[Dict[str, Any], List[Any]], indent: Optional[int] = 2, 
+                   monitor_memory: bool = True) -> None:
     """
-    Write data to JSON file safely.
+    Write data to JSON file safely with memory monitoring.
     
     Args:
         filepath: Output file path
         data: Data to write
         indent: JSON indentation (None for compact)
+        monitor_memory: Whether to monitor memory usage during write
         
     Raises:
         ProcessingError: If writing fails
     """
+    memory_monitor = MemoryMonitor() if monitor_memory else None
+    
     try:
         # Ensure output directory exists
         output_dir = Path(filepath).parent
         ensure_directory_exists(str(output_dir))
         
+        if memory_monitor:
+            memory_monitor.check_memory_usage()
+        
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=indent, ensure_ascii=False)
+        
+        if memory_monitor:
+            final_memory = memory_monitor.get_memory_usage()
+            cli_logger.debug(f"JSON write completed. Memory usage: {final_memory['rss_mb']:.1f}MB")
+            
     except Exception as e:
         raise ProcessingError(filepath, "write JSON", str(e))
 
@@ -276,7 +384,7 @@ def generate_output_path(
 
 def get_file_info(filepath: str) -> Dict[str, Any]:
     """
-    Get file information including size, modification time, etc.
+    Get comprehensive file information including size, modification time, etc.
     
     Args:
         filepath: Path to file
@@ -286,13 +394,28 @@ def get_file_info(filepath: str) -> Dict[str, Any]:
     """
     try:
         stat = Path(filepath).stat()
+        file_size = stat.st_size
+        
+        # Determine file category based on size
+        if file_size > FILE_SIZE_LIMITS['max_file_size']:
+            size_category = 'too_large'
+        elif file_size > FILE_SIZE_LIMITS['warning_threshold']:
+            size_category = 'large'
+        elif file_size > 10240:  # 10KB
+            size_category = 'medium'
+        else:
+            size_category = 'small'
+        
         return {
             'path': filepath,
-            'size': stat.st_size,
-            'size_human': format_file_size(stat.st_size),
+            'size': file_size,
+            'size_human': format_file_size(file_size),
+            'size_category': size_category,
             'modified': stat.st_mtime,
             'readable': os.access(filepath, os.R_OK),
             'writable': os.access(filepath, os.W_OK),
+            'is_large': file_size > FILE_SIZE_LIMITS['warning_threshold'],
+            'is_too_large': file_size > FILE_SIZE_LIMITS['max_file_size']
         }
     except Exception as e:
         return {
@@ -358,10 +481,11 @@ def validate_output_path(output_path: str, overwrite: bool = False) -> None:
 
 class FileProcessor:
     """
-    Context manager for processing multiple files with progress tracking.
+    Context manager for processing multiple files with progress tracking and memory monitoring.
     """
     
-    def __init__(self, files: List[str], description: str = "Processing files"):
+    def __init__(self, files: List[str], description: str = "Processing files", 
+                 monitor_memory: bool = True):
         self.files = files
         self.description = description
         self.progress: Optional[Progress] = None
@@ -369,8 +493,14 @@ class FileProcessor:
         self.current_file: Optional[str] = None
         self.processed_count = 0
         self.failed_files: List[Tuple[str, str]] = []
+        self.memory_monitor = MemoryMonitor() if monitor_memory else None
+        self.start_memory: Optional[Dict[str, float]] = None
     
     def __enter__(self) -> 'FileProcessor':
+        if self.memory_monitor:
+            self.start_memory = self.memory_monitor.get_memory_usage()
+            cli_logger.debug(f"Starting file processing. Initial memory: {self.start_memory['rss_mb']:.1f}MB")
+        
         if len(self.files) > 1:
             self.progress = Progress()
             self.progress.__enter__()
@@ -395,7 +525,7 @@ class FileProcessor:
     
     def update_progress(self, filepath: str, success: bool, error_msg: Optional[str] = None):
         """
-        Update progress for a processed file.
+        Update progress for a processed file with memory monitoring.
         
         Args:
             filepath: Path to processed file
@@ -407,23 +537,41 @@ class FileProcessor:
         if not success and error_msg:
             self.failed_files.append((filepath, error_msg))
         
+        # Monitor memory usage
+        if self.memory_monitor:
+            if not self.memory_monitor.check_memory_usage():
+                # Force garbage collection if memory usage is high
+                self.memory_monitor.force_garbage_collection()
+        
         if self.progress and self.task_id is not None:
             self.progress.update(self.task_id, advance=1)
     
     def get_summary(self) -> Dict[str, Any]:
         """
-        Get processing summary.
+        Get processing summary with memory statistics.
         
         Returns:
             Summary dictionary with statistics
         """
-        return {
+        summary = {
             'total_files': len(self.files),
             'processed': self.processed_count,
             'successful': self.processed_count - len(self.failed_files),
             'failed': len(self.failed_files),
             'failed_files': self.failed_files
         }
+        
+        # Add memory statistics if monitoring is enabled
+        if self.memory_monitor and self.start_memory:
+            current_memory = self.memory_monitor.get_memory_usage()
+            summary['memory'] = {
+                'start_mb': self.start_memory['rss_mb'],
+                'end_mb': current_memory['rss_mb'],
+                'peak_mb': max(self.start_memory['rss_mb'], current_memory['rss_mb']),
+                'change_mb': current_memory['rss_mb'] - self.start_memory['rss_mb']
+            }
+        
+        return summary
 
 
 class FileProcessorContext:
