@@ -6,7 +6,7 @@ def test_single_separator():
     ]
 
     expected = [
-        {'separator': '---'}
+        {'separator': '---', 'start_line': 0, 'end_line': 0}
     ]
 
     assert convert_separators(input_data) == expected
@@ -19,9 +19,9 @@ def test_multiple_separators():
     ]
 
     expected = [
-        {'separator': '---'},
+        {'separator': '---', 'start_line': 0, 'end_line': 0},
         {'p': 'some text'},
-        {'separator': '***'}
+        {'separator': '***', 'start_line': 0, 'end_line': 0}
     ]
 
     assert convert_separators(input_data) == expected
@@ -61,7 +61,7 @@ def test_example_from_docstring():
         {'p': '', 'indent': 0},
         {'p': 'A paragraph after a h1 header', 'indent': 0},
         {'p': '', 'indent': 0},
-        {'separator': '---'},
+        {'separator': '---', 'start_line': 0, 'end_line': 0},
         {'p': '', 'indent': 0},
         {'h2': 'Header level 2', 'indent': 0},
         {'p': '', 'indent': 0},
@@ -81,11 +81,11 @@ def test_different_separator_styles():
     ]
 
     expected = [
-        {'separator': '---'},
+        {'separator': '---', 'start_line': 0, 'end_line': 0},
         {'p': 'text'},
-        {'separator': '***'},
+        {'separator': '***', 'start_line': 0, 'end_line': 0},
         {'p': 'text'},
-        {'separator': '___'}
+        {'separator': '___', 'start_line': 0, 'end_line': 0}
     ]
 
     assert convert_separators(input_data) == expected

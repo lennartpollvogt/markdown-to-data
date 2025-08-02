@@ -6,7 +6,7 @@ def test_single_paragraph():
     ]
 
     expected = [
-        {'paragraph': 'This is a simple paragraph'}
+        {'paragraph': 'This is a simple paragraph', 'start_line': 0, 'end_line': 0}
     ]
 
     assert convert_paragraphs(input_data) == expected
@@ -19,9 +19,9 @@ def test_multiple_paragraphs():
     ]
 
     expected = [
-        {'paragraph': 'First paragraph'},
-        {'paragraph': 'Second paragraph'},
-        {'paragraph': 'Third paragraph'}
+        {'paragraph': 'First paragraph', 'start_line': 0, 'end_line': 0},
+        {'paragraph': 'Second paragraph', 'start_line': 0, 'end_line': 0},
+        {'paragraph': 'Third paragraph', 'start_line': 0, 'end_line': 0}
     ]
 
     assert convert_paragraphs(input_data) == expected
@@ -34,9 +34,9 @@ def test_empty_paragraphs():
     ]
 
     expected = [
-        {'paragraph': ''},
-        {'paragraph': 'Some content'},
-        {'paragraph': ''}
+        {'paragraph': '', 'start_line': 0, 'end_line': 0},
+        {'paragraph': 'Some content', 'start_line': 0, 'end_line': 0},
+        {'paragraph': '', 'start_line': 0, 'end_line': 0}
     ]
 
     assert convert_paragraphs(input_data) == expected
@@ -51,9 +51,9 @@ def test_mixed_content():
 
     expected = [
         {'h1': 'Header', 'indent': 0},
-        {'paragraph': 'A paragraph'},
+        {'paragraph': 'A paragraph', 'start_line': 0, 'end_line': 0},
         {'hr': '---', 'indent': 0},
-        {'paragraph': 'Another paragraph'}
+        {'paragraph': 'Another paragraph', 'start_line': 0, 'end_line': 0}
     ]
 
     assert convert_paragraphs(input_data) == expected
@@ -82,9 +82,9 @@ def test_paragraphs_with_special_characters():
     ]
 
     expected = [
-        {'paragraph': 'Paragraph with *asterisks* and _underscores_'},
-        {'paragraph': 'Paragraph with [links](http://example.com)'},
-        {'paragraph': 'Paragraph with `code`'}
+        {'paragraph': 'Paragraph with *asterisks* and _underscores_', 'start_line': 0, 'end_line': 0},
+        {'paragraph': 'Paragraph with [links](http://example.com)', 'start_line': 0, 'end_line': 0},
+        {'paragraph': 'Paragraph with `code`', 'start_line': 0, 'end_line': 0}
     ]
 
     assert convert_paragraphs(input_data) == expected
@@ -97,9 +97,9 @@ def test_paragraphs_with_different_indents():
     ]
 
     expected = [
-        {'paragraph': 'No indent'},
-        {'paragraph': 'Single indent'},
-        {'paragraph': 'Double indent'}
+        {'paragraph': 'No indent', 'start_line': 0, 'end_line': 0},
+        {'paragraph': 'Single indent', 'start_line': 0, 'end_line': 0},
+        {'paragraph': 'Double indent', 'start_line': 0, 'end_line': 0}
     ]
 
     assert convert_paragraphs(input_data) == expected
@@ -118,13 +118,13 @@ def test_complex_document_structure():
 
     expected = [
         {'h1': 'Title', 'indent': 0},
-        {'paragraph': ''},
-        {'paragraph': 'Introduction paragraph'},
-        {'paragraph': ''},
+        {'paragraph': '', 'start_line': 0, 'end_line': 0},
+        {'paragraph': 'Introduction paragraph', 'start_line': 0, 'end_line': 0},
+        {'paragraph': '', 'start_line': 0, 'end_line': 0},
         {'h2': 'Section', 'indent': 0},
-        {'paragraph': 'Section content'},
+        {'paragraph': 'Section content', 'start_line': 0, 'end_line': 0},
         {'hr': '---', 'indent': 0},
-        {'paragraph': 'Conclusion'}
+        {'paragraph': 'Conclusion', 'start_line': 0, 'end_line': 0}
     ]
 
     assert convert_paragraphs(input_data) == expected

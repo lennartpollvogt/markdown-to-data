@@ -10,7 +10,9 @@ def test_single_h1():
             'header': {
                 'level': 1,
                 'content': 'Main Header'
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -27,12 +29,12 @@ def test_all_header_levels():
     ]
 
     expected = [
-        {'header': {'level': 1, 'content': 'Header 1'}},
-        {'header': {'level': 2, 'content': 'Header 2'}},
-        {'header': {'level': 3, 'content': 'Header 3'}},
-        {'header': {'level': 4, 'content': 'Header 4'}},
-        {'header': {'level': 5, 'content': 'Header 5'}},
-        {'header': {'level': 6, 'content': 'Header 6'}}
+        {'header': {'level': 1, 'content': 'Header 1'}, 'start_line': 0, 'end_line': 0},
+        {'header': {'level': 2, 'content': 'Header 2'}, 'start_line': 0, 'end_line': 0},
+        {'header': {'level': 3, 'content': 'Header 3'}, 'start_line': 0, 'end_line': 0},
+        {'header': {'level': 4, 'content': 'Header 4'}, 'start_line': 0, 'end_line': 0},
+        {'header': {'level': 5, 'content': 'Header 5'}, 'start_line': 0, 'end_line': 0},
+        {'header': {'level': 6, 'content': 'Header 6'}, 'start_line': 0, 'end_line': 0}
     ]
 
     assert convert_headers(input_data) == expected
@@ -46,9 +48,9 @@ def test_mixed_content():
     ]
 
     expected = [
-        {'header': {'level': 1, 'content': 'Title'}},
+        {'header': {'level': 1, 'content': 'Title'}, 'start_line': 0, 'end_line': 0},
         {'p': 'Some text'},
-        {'header': {'level': 2, 'content': 'Subtitle'}},
+        {'header': {'level': 2, 'content': 'Subtitle'}, 'start_line': 0, 'end_line': 0},
         {'p': 'More text'}
     ]
 
@@ -85,13 +87,13 @@ def test_example_from_docstring():
     ]
 
     expected = [
-        {'header': {'level': 1, 'content': 'Header'}},
+        {'header': {'level': 1, 'content': 'Header'}, 'start_line': 0, 'end_line': 0},
         {'p': '', 'indent': 0},
         {'p': 'A paragraph after a h1 header', 'indent': 0},
         {'p': '', 'indent': 0},
         {'hr': '---', 'indent': 0},
         {'p': '', 'indent': 0},
-        {'header': {'level': 2, 'content': 'Header level 2'}},
+        {'header': {'level': 2, 'content': 'Header level 2'}, 'start_line': 0, 'end_line': 0},
         {'p': '', 'indent': 0},
         {'p': 'A paragraph after a separator', 'indent': 0},
         {'p': '', 'indent': 0}
