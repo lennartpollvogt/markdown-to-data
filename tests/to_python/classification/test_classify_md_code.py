@@ -5,9 +5,9 @@ def test_simple_code_block():
 print("Hello")
 ```'''
     expected = [
-        {'code': '```', 'indent': 0},
-        {'code': 'print("Hello")', 'indent': 0},
-        {'code': '```', 'indent': 0}
+        {'code': '```', 'indent': 0, 'line': 1},
+        {'code': 'print("Hello")', 'indent': 0, 'line': 2},
+        {'code': '```', 'indent': 0, 'line': 3}
     ]
     assert md_classification(markdown) == expected
 
@@ -17,10 +17,10 @@ def hello():
     print("World")
 ```'''
     expected = [
-        {'code': '```python', 'indent': 0},
-        {'code': 'def hello():', 'indent': 0},
-        {'code': '    print("World")', 'indent': 4},
-        {'code': '```', 'indent': 0}
+        {'code': '```python', 'indent': 0, 'line': 1},
+        {'code': 'def hello():', 'indent': 0, 'line': 2},
+        {'code': '    print("World")', 'indent': 4, 'line': 3},
+        {'code': '```', 'indent': 0, 'line': 4}
     ]
     assert md_classification(markdown) == expected
 
@@ -29,9 +29,9 @@ def test_indented_code_block():
     code here
     ```'''
     expected = [
-        {'code': '```', 'indent': 0}, # TODO: this might be a problem
-        {'code': '    code here', 'indent': 4},
-        {'code': '    ```', 'indent': 4}
+        {'code': '    ```', 'indent': 4, 'line': 1}, # TODO: this might be a problem
+        {'code': '    code here', 'indent': 4, 'line': 2},
+        {'code': '    ```', 'indent': 4, 'line': 3}
     ]
     assert md_classification(markdown) == expected
 
@@ -42,11 +42,11 @@ code
 ```
 More text'''
     expected = [
-        {'p': 'Some text', 'indent': 0},
-        {'code': '```', 'indent': 0},
-        {'code': 'code', 'indent': 0},
-        {'code': '```', 'indent': 0},
-        {'p': 'More text', 'indent': 0}
+        {'p': 'Some text', 'indent': 0, 'line': 1},
+        {'code': '```', 'indent': 0, 'line': 2},
+        {'code': 'code', 'indent': 0, 'line': 3},
+        {'code': '```', 'indent': 0, 'line': 4},
+        {'p': 'More text', 'indent': 0, 'line': 5}
     ]
     assert md_classification(markdown) == expected
 
@@ -54,8 +54,8 @@ def test_empty_code_block():
     markdown = '''```
 ```'''
     expected = [
-        {'code': '```', 'indent': 0},
-        {'code': '```', 'indent': 0}
+        {'code': '```', 'indent': 0, 'line': 1},
+        {'code': '```', 'indent': 0, 'line': 2}
     ]
     assert md_classification(markdown) == expected
 
@@ -64,9 +64,9 @@ def test_nested_code_block_markers():
 echo "```"
 ```'''
     expected = [
-        {'code': '```', 'indent': 0},
-        {'code': 'echo "```"', 'indent': 0},
-        {'code': '```', 'indent': 0}
+        {'code': '```', 'indent': 0, 'line': 1},
+        {'code': 'echo "```"', 'indent': 0, 'line': 2},
+        {'code': '```', 'indent': 0, 'line': 3}
     ]
     assert md_classification(markdown) == expected
 
@@ -77,11 +77,11 @@ echo "Hello * World"
 $PATH
 ```'''
     expected = [
-        {'code': '```bash', 'indent': 0},
-        {'code': 'echo "Hello * World"', 'indent': 0},
-        {'code': '# Comment', 'indent': 0},
-        {'code': '$PATH', 'indent': 0},
-        {'code': '```', 'indent': 0}
+        {'code': '```bash', 'indent': 0, 'line': 1},
+        {'code': 'echo "Hello * World"', 'indent': 0, 'line': 2},
+        {'code': '# Comment', 'indent': 0, 'line': 3},
+        {'code': '$PATH', 'indent': 0, 'line': 4},
+        {'code': '```', 'indent': 0, 'line': 5}
     ]
     assert md_classification(markdown) == expected
 
@@ -95,13 +95,13 @@ Some text
 console.log("Hi");
 ```'''
     expected = [
-        {'code': '```python', 'indent': 0},
-        {'code': 'def a():', 'indent': 0},
-        {'code': '    pass', 'indent': 4},
-        {'code': '```', 'indent': 0},
-        {'p': 'Some text', 'indent': 0},
-        {'code': '```javascript', 'indent': 0},
-        {'code': 'console.log("Hi");', 'indent': 0},
-        {'code': '```', 'indent': 0}
+        {'code': '```python', 'indent': 0, 'line': 1},
+        {'code': 'def a():', 'indent': 0, 'line': 2},
+        {'code': '    pass', 'indent': 4, 'line': 3},
+        {'code': '```', 'indent': 0, 'line': 4},
+        {'p': 'Some text', 'indent': 0, 'line': 5},
+        {'code': '```javascript', 'indent': 0, 'line': 6},
+        {'code': 'console.log("Hi");', 'indent': 0, 'line': 7},
+        {'code': '```', 'indent': 0, 'line': 8}
     ]
     assert md_classification(markdown) == expected
