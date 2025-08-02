@@ -30,6 +30,7 @@ Output:
 """
 
 from typing import List, Dict, Any
+from ..merging_multiline_objects.line_utils import preserve_line_info_in_conversion
 
 def _is_separator(item: Dict[str, Any]) -> bool:
     """Check if an item is a separator."""
@@ -52,9 +53,10 @@ def convert_separators(classified_list: List[Dict[str, Any]]) -> List[Dict[str, 
     for item in classified_list:
         if _is_separator(item):
             # Convert hr to separator
-            result.append({
+            separator_element = {
                 'separator': item['hr']
-            })
+            }
+            result.append(preserve_line_info_in_conversion(item, separator_element))
         else:
             # Keep non-separator items as they are
             result.append(item)

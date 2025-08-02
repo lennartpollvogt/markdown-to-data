@@ -4,6 +4,7 @@ It supports tables with and without headers, handling inconsistent columns and m
 """
 
 from typing import List, Dict, Any
+from .line_utils import calculate_line_range, add_line_range_to_element
 
 def _is_table_row(item: Dict[str, Any]) -> bool:
     """Check if an item is a table row."""
@@ -78,9 +79,15 @@ def _process_table_segment(segment: List[Dict[str, Any]]) -> Dict[str, Any]:
     headers = _extract_headers(segment)
     columns = _build_column_structure(segment, headers)
 
-    return {
+    # Calculate line range for the table
+    start_line, end_line = calculate_line_range(segment)
+
+    table_element = {
         'table': columns
     }
+    add_line_range_to_element(table_element, start_line, end_line)
+
+    return table_element
 
 def merge_tables(classified_md: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """

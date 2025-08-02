@@ -51,6 +51,7 @@ output:
 """
 
 from typing import List, Dict, Any, Tuple
+from .line_utils import calculate_line_range, add_line_range_to_element
 
 def _is_blockquote(item: Dict[str, Any]) -> bool:
     """Check if an item is a blockquote."""
@@ -142,10 +143,16 @@ def merge_blockquotes(classified_md: List[Dict[str, Any]]) -> List[Dict[str, Any
             base_level = current_item['level']
             blockquote_items, new_i = _build_nested_blockquote(classified_md, i, base_level)
 
+            # Calculate line range for blockquote segment
+            blockquote_segment = classified_md[i:new_i]
+            start_line, end_line = calculate_line_range(blockquote_segment)
+
             # Add merged blockquote structure
-            result.append({
+            blockquote_element = {
                 'blockquote': blockquote_items
-            })
+            }
+            add_line_range_to_element(blockquote_element, start_line, end_line)
+            result.append(blockquote_element)
 
             i = new_i
         else:

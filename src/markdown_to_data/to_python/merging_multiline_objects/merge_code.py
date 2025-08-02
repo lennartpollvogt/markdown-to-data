@@ -1,5 +1,6 @@
 from typing import List, Text, Any, Dict
 import re
+from .line_utils import calculate_line_range, add_line_range_to_element
 
 def _extract_md_code(markdown_snippet: str) -> Dict[str, Any]:
     '''
@@ -65,6 +66,7 @@ def merge_code_blocks(classified_list: List[Dict[str, Text | Any]]) -> List[Dict
     result: List[Dict[str, Text | Any]] = []
     in_code_block = False
     temp_code_block = []
+    temp_code_elements = []  # Track elements for line range calculation
     start_delimiter = None
 
     for item in classified_list:
@@ -73,28 +75,40 @@ def merge_code_blocks(classified_list: List[Dict[str, Text | Any]]) -> List[Dict
                 if in_code_block:
                     # End of code block
                     temp_code_block.append(item['code'])
-                    #result.append({'code': '\n'.join(temp_code_block)})
-                    result.append({'code': _extract_md_code(markdown_snippet='\n'.join(temp_code_block))})
+                    temp_code_elements.append(item)
+
+                    # Calculate line range and create code element
+                    start_line, end_line = calculate_line_range(temp_code_elements)
+                    code_element = {'code': _extract_md_code(markdown_snippet='\n'.join(temp_code_block))}
+                    add_line_range_to_element(code_element, start_line, end_line)
+                    result.append(code_element)
+
                     temp_code_block.clear()
+                    temp_code_elements.clear()
                     in_code_block = False
                 else:
                     # Start of code block
                     in_code_block = True
                     start_delimiter = item['code'].strip()
                     temp_code_block.append(item['code'])
+                    temp_code_elements.append(item)
             elif in_code_block:
                 temp_code_block.append(item['code'])
+                temp_code_elements.append(item)
         else:
             if in_code_block:
                 # If we encounter non-code items while in a code block, treat them as part of the code
                 temp_code_block.append(list(item.values())[0])
+                temp_code_elements.append(item)
             else:
                 result.append(item)
+
     # Handle any remaining code block
     if in_code_block:
         temp_code_block.append(start_delimiter)
-        #result.append({'code': '\n'.join(temp_code_block)})
-        result.append({'code': _extract_md_code(markdown_snippet='\n'.join(temp_code_block))})
-
+        start_line, end_line = calculate_line_range(temp_code_elements)
+        code_element = {'code': _extract_md_code(markdown_snippet='\n'.join(temp_code_block))}
+        add_line_range_to_element(code_element, start_line, end_line)
+        result.append(code_element)
 
     return result

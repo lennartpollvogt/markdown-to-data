@@ -35,6 +35,7 @@ output:
 """
 
 from typing import List, Dict, Any
+from .line_utils import calculate_line_range, add_line_range_to_element
 
 def _is_definition_term(item: Dict[str, Any]) -> bool:
     """Check if the item is a definition term."""
@@ -73,6 +74,10 @@ def merge_definition_lists(classified_md: List[Dict[str, Any]]) -> List[Dict[str
                 definitions.append(classified_md[j]['dd'])
                 j += 1
 
+            # Calculate line range for definition list (term + all definitions)
+            def_list_elements = classified_md[i:j]
+            start_line, end_line = calculate_line_range(def_list_elements)
+
             # Create definition list object
             def_list = {
                 'def_list': {
@@ -80,6 +85,7 @@ def merge_definition_lists(classified_md: List[Dict[str, Any]]) -> List[Dict[str
                     'list': definitions
                 }
             }
+            add_line_range_to_element(def_list, start_line, end_line)
             result.append(def_list)
 
             # Move index past the processed definitions

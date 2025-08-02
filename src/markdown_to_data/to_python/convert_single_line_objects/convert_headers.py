@@ -38,6 +38,7 @@ Output:
 ]
 """
 from typing import List, Dict, Any
+from ..merging_multiline_objects.line_utils import preserve_line_info_in_conversion
 
 def _is_header(item: Dict[str, Any]) -> bool:
     """Check if an item is a header."""
@@ -69,12 +70,13 @@ def convert_headers(classified_list: List[Dict[str, Any]]) -> List[Dict[str, Any
         if _is_header(item):
             level = _get_header_level(item)
             content = item[f'h{level}']
-            result.append({
+            header_element = {
                 'header': {
                     'level': level,
                     'content': content
                 }
-            })
+            }
+            result.append(preserve_line_info_in_conversion(item, header_element))
         else:
             result.append(item)
 

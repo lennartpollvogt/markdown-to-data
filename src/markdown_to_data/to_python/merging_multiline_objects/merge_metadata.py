@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Tuple
 import re
+from .line_utils import calculate_line_range, add_line_range_to_element
 
 def _is_separator(item: Dict[str, Any]) -> bool:
     """Check if an item is a separator."""
@@ -179,8 +180,14 @@ def merge_metadata(classified_list: List[Dict[str, Any]]) -> List[Dict[str, Any]
                 parsed_value = _parse_metadata_value(value)
                 metadata[normalized_key] = parsed_value
 
+    # Calculate line range for metadata block
+    metadata_elements = classified_list[start_idx:end_idx + 1]  # Include both separators
+    start_line, end_line = calculate_line_range(metadata_elements)
+
     # Combine metadata with remaining content
-    result = [{'metadata': metadata}]
+    metadata_element = {'metadata': metadata}
+    add_line_range_to_element(metadata_element, start_line, end_line)
+    result = [metadata_element]
 
     # Add all content after the metadata block
     if end_idx + 1 < len(classified_list):

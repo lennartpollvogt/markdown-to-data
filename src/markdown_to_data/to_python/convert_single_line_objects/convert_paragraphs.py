@@ -1,4 +1,5 @@
 from typing import List, Dict, Any
+from ..merging_multiline_objects.line_utils import preserve_line_info_in_conversion
 
 def _is_paragraph(item: Dict[str, Any]) -> bool:
     """Check if an item is a paragraph."""
@@ -20,10 +21,11 @@ def convert_paragraphs(classified_list: List[Dict[str, Any]]) -> List[Dict[str, 
 
     for item in classified_list:
         if _is_paragraph(item):
-            # Convert hr to separator
-            result.append({
+            # Convert p to paragraph
+            paragraph_element = {
                 'paragraph': item['p']
-            })
+            }
+            result.append(preserve_line_info_in_conversion(item, paragraph_element))
         else:
             # Keep non-paragraph items as they are
             result.append(item)

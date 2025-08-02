@@ -6,8 +6,9 @@ and task list properties.
 # TODO: be more senstivie to indents in lists
 
 from typing import List, Dict, Any, Tuple
+from .line_utils import calculate_line_range, add_line_range_to_element
 
-def _get_list_type(item: Dict[str, Any]) -> str | None:
+def _get_list_type(item: Dict[str, Any]) -> str:
     """Determine the type of list item (ul or ol)."""
     return 'ul' if 'ul' in item else 'ol' if 'ol' in item else None
 
@@ -132,12 +133,15 @@ def merge_lists(classified_md: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             else:
                 # Process previous segment
                 if current_segment:
-                    result.append({
+                    start_line, end_line = calculate_line_range(current_segment)
+                    list_element = {
                         'list': {
                             'type': current_type,
                             'items': _build_nested_list(current_segment, 0, 0)[0]
                         }
-                    })
+                    }
+                    add_line_range_to_element(list_element, start_line, end_line)
+                    result.append(list_element)
                 # Start new segment
                 current_segment = [item]
                 current_type = list_type
@@ -146,12 +150,15 @@ def merge_lists(classified_md: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         else:
             # Process any existing segment
             if current_segment:
-                result.append({
+                start_line, end_line = calculate_line_range(current_segment)
+                list_element = {
                     'list': {
                         'type': current_type,
                         'items': _build_nested_list(current_segment, 0, 0)[0]
                     }
-                })
+                }
+                add_line_range_to_element(list_element, start_line, end_line)
+                result.append(list_element)
                 current_segment = []
                 current_type = None
             # Add non-list item to result
@@ -159,11 +166,14 @@ def merge_lists(classified_md: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
     # Handle last segment if exists
     if current_segment:
-        result.append({
+        start_line, end_line = calculate_line_range(current_segment)
+        list_element = {
             'list': {
                 'type': current_type,
                 'items': _build_nested_list(current_segment, 0, 0)[0]
             }
-        })
+        }
+        add_line_range_to_element(list_element, start_line, end_line)
+        result.append(list_element)
 
     return result
