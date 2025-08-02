@@ -43,6 +43,9 @@ def build_hierarchy_for_dict(merged_elements: List[Dict[str, Any]]) -> Dict[str,
     level_stack = [result]
     key_counts = defaultdict(int)
 
+    # Fields to exclude from hierarchy
+    EXCLUDED_FIELDS = {'start_line', 'end_line'}
+
     for item in merged_elements:
         if 'metadata' in item:
             result['metadata'] = item['metadata']
@@ -65,6 +68,10 @@ def build_hierarchy_for_dict(merged_elements: List[Dict[str, Any]]) -> Dict[str,
             key_counts.clear()  # Reset key counts for each new heading level
         else:
             for key, value in item.items():
+                # Skip line number fields
+                if key in EXCLUDED_FIELDS:
+                    continue
+
                 key_counts[key] += 1
                 if key_counts[key] > 1:
                     new_key = f"{key}_{key_counts[key]}"
