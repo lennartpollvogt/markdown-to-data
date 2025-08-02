@@ -19,11 +19,12 @@ def set_line_keys_to_code(current_list: List[Dict[str, Any]]) -> List[Dict[str, 
     # Iterate backwards from the last 'code' entry
     for i in range(end_index - 1, start_index, -1):
         if 'code' not in current_list[i]:
-            # Get the text content and indentation if they exist
+            # Get the text content, indentation, and line number if they exist
             content = next(iter(current_list[i].values()))  # Get the first value
             indent = current_list[i].get('indent', 0)  # Get indent if it exists, default to 0
+            line_number = current_list[i].get('line', 0)  # Get line number if it exists, default to 0
 
             # Create new dictionary with 'code' key
-            current_list[i] = {'code': content, 'indent': indent}
+            current_list[i] = {'code': content, 'indent': indent, 'line': line_number}
 
     return current_list
