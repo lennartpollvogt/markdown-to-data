@@ -31,7 +31,9 @@ def test_simple_unordered_list():
                     {'content': 'item 1', 'items': [], 'task': None},
                     {'content': 'item 2', 'items': [], 'task': None}
                 ]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -83,7 +85,9 @@ def test_nested_unordered_list():
                         'task': None
                     }
                 ]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -120,7 +124,9 @@ def test_multiple_lists_separated_by_paragraph():
                 'items': [
                     {'content': 'item 1', 'items': [], 'task': None}
                 ]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         },
         {'p': '', 'indent': 0},
         {
@@ -129,7 +135,9 @@ def test_multiple_lists_separated_by_paragraph():
                 'items': [
                     {'content': 'item 2', 'items': [], 'task': None}
                 ]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -166,7 +174,9 @@ def test_mixed_list_types():
                 'items': [
                     {'content': 'item 1', 'items': [], 'task': None}
                 ]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         },
         {'p': '', 'indent': 0},
         {
@@ -175,7 +185,9 @@ def test_mixed_list_types():
                 'items': [
                     {'content': 'item 2', 'items': [], 'task': None}
                 ]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -212,7 +224,9 @@ def test_task_list():
                     {'content': 'item 1', 'items': [], 'task': 'checked'},
                     {'content': 'item 2', 'items': [], 'task': 'unchecked'}
                 ]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -244,7 +258,9 @@ def test_list_terminated_by_different_element():
                 'items': [
                     {'content': 'item 1', 'items': [], 'task': None}
                 ]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         },
         {'blockquote': 'some quote', 'indent': 0}
     ]

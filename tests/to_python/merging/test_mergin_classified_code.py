@@ -7,7 +7,7 @@ def test_simple_code_block():
         {'code': '```', 'indent': 0}
     ]
     expected = [
-        {'code': {'language': 'python', 'content': 'print("Hello")'}}
+        {'code': {'language': 'python', 'content': 'print("Hello")'}, 'start_line': 0, 'end_line': 0}
     ]
     assert merge_code_blocks(classified_list) == expected
 
@@ -21,7 +21,7 @@ def test_code_block_with_surrounding_text():
     ]
     expected = [
         {'p': 'Before text'},
-        {'code': {'language': None, 'content': 'print("Hello")'}},
+        {'code': {'language': None, 'content': 'print("Hello")'}, 'start_line': 0, 'end_line': 0},
         {'p': 'After text'}
     ]
     assert merge_code_blocks(classified_list) == expected
@@ -38,9 +38,9 @@ def test_multiple_code_blocks():
         {'code': '```', 'indent': 0}
     ]
     expected = [
-        {'code': {'language': 'python', 'content': 'def hello():\n    print("Hello")'}},
+        {'code': {'language': 'python', 'content': 'def hello():\n    print("Hello")'}, 'start_line': 0, 'end_line': 0},
         {'p': 'Middle text'},
-        {'code': {'language': 'javascript', 'content': 'console.log("Hello");'}}
+        {'code': {'language': 'javascript', 'content': 'console.log("Hello");'}, 'start_line': 0, 'end_line': 0}
     ]
     assert merge_code_blocks(classified_list) == expected
 
@@ -51,7 +51,7 @@ def test_empty_code_block():
         {'code': '```', 'indent': 0}
     ]
     expected = [
-        {'code': {'language': 'python', 'content': ''}}
+        {'code': {'language': 'python', 'content': ''}, 'start_line': 0, 'end_line': 0}
     ]
     assert merge_code_blocks(classified_list) == expected
 
@@ -63,7 +63,7 @@ def test_indented_code_block():
         {'code': '```', 'indent': 4}
     ]
     expected = [
-        {'code': {'language': None, 'content': 'print("Hello")\nprint("World")'}}
+        {'code': {'language': None, 'content': 'print("Hello")\nprint("World")'}, 'start_line': 0, 'end_line': 0}
     ]
     assert merge_code_blocks(classified_list) == expected
 
@@ -74,7 +74,7 @@ def test_invalid_language_specification():
         {'code': '```', 'indent': 0}
     ]
     expected = [
-        {'code': {'language': None, 'content': 'invalid@language\nprint("Hello")'}}
+        {'code': {'language': None, 'content': 'invalid@language\nprint("Hello")'}, 'start_line': 0, 'end_line': 0}
     ]
     assert merge_code_blocks(classified_list) == expected
 
@@ -87,7 +87,7 @@ def test_code_block_with_special_characters():
         {'code': '```', 'indent': 0}
     ]
     expected = [
-        {'code': {'language': 'bash', 'content': '# Comment\necho "Hello * World"\n$PATH'}}
+        {'code': {'language': 'bash', 'content': '# Comment\necho "Hello * World"\n$PATH'}, 'start_line': 0, 'end_line': 0}
     ]
     assert merge_code_blocks(classified_list) == expected
 
@@ -97,6 +97,6 @@ def test_unclosed_code_block():
         {'code': 'print("Hello")', 'indent': 0}
     ]
     expected = [
-        {'code': {'language': 'python', 'content': 'print("Hello")'}}
+        {'code': {'language': 'python', 'content': 'print("Hello")'}, 'start_line': 0, 'end_line': 0}
     ]
     assert merge_code_blocks(classified_list) == expected

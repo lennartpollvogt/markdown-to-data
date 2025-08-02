@@ -12,7 +12,9 @@ def test_single_line_blockquote():
                     'content': 'a single line blockquote',
                     'items': []
                 }
-            ]
+            ],
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -40,7 +42,9 @@ def test_multiline_blockquote():
                     'content': 'third line',
                     'items': []
                 }
-            ]
+            ],
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -69,7 +73,9 @@ def test_nested_blockquote():
                     'content': 'final line',
                     'items': []
                 }
-            ]
+            ],
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -89,7 +95,9 @@ def test_multiple_separate_blockquotes():
                     'content': 'first quote',
                     'items': []
                 }
-            ]
+            ],
+            'start_line': 0,
+            'end_line': 0
         },
         {'p': 'normal paragraph'},
         {
@@ -98,7 +106,9 @@ def test_multiple_separate_blockquotes():
                     'content': 'second quote',
                     'items': []
                 }
-            ]
+            ],
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -138,7 +148,9 @@ def test_complex_nested_blockquote():
                     'content': 'back to level 1',
                     'items': []
                 }
-            ]
+            ],
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -179,7 +191,9 @@ def test_example_from_docstring():
                     'content': 'a single line blockquote',
                     'items': []
                 }
-            ]
+            ],
+            'start_line': 0,
+            'end_line': 0
         },
         {'p': '', 'indent': 0},
         {
@@ -201,7 +215,9 @@ def test_example_from_docstring():
                     'content': 'last line of the blockquote',
                     'items': []
                 }
-            ]
+            ],
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 

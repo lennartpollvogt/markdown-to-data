@@ -16,7 +16,9 @@ def test_basic_metadata():
                 'title': 'Test Document',
                 'author': 'John Doe',
                 'date': '2024-01-15'
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -38,7 +40,9 @@ def test_metadata_with_spaces():
                 'title': 'This is a longer title with spaces',
                 'created_by': 'John Doe',
                 'last_modified': '2024-01-15'
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -60,7 +64,9 @@ def test_metadata_with_special_characters():
                 'title': 'This is a longer title with spaces',
                 'created-by': 'John Doe',
                 'last_modified': '2024-01-15'
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -82,7 +88,9 @@ def test_empty_metadata_values():
                 'title': None,
                 'author': None,
                 'date': None
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -104,7 +112,9 @@ def test_metadata_with_special_values():
                 'title': 'Understanding Time: A Brief History',
                 'time': '15:30',
                 'url': 'https://example.com'
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -124,7 +134,9 @@ def test_metadata_with_lists():
             'metadata': {
                 'keywords': ['python', 'markdown', 'parser'],
                 'authors': ['John Doe', 'Jane Smith', 'Bob Johnson']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -152,7 +164,9 @@ def test_metadata_with_mixed_types():
                 'keywords': ['markdown', 'parser', 'data'],
                 'version': '1.0.0',
                 'boolean': True
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -176,7 +190,9 @@ def test_metadata_with_quoted_values():
                 'quote': 'Single quoted, value with commas',
                 'quote2': 'Double quoted, value with commas',
                 'tags': ['python', 'web, development', 'testing']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -202,7 +218,9 @@ def test_metadata_with_numbers():
                 'decimal': 1.4,
                 'deciamals': [11.333, 4.6, 7.3],
                 'wrong_decimal': [1, 2]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 

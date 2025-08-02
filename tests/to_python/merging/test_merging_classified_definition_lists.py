@@ -11,7 +11,9 @@ def test_single_term_single_definition():
             'def_list': {
                 'term': 'term',
                 'list': ['definition']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -30,7 +32,9 @@ def test_single_term_multiple_definitions():
             'def_list': {
                 'term': 'term',
                 'list': ['definition 1', 'definition 2', 'definition 3']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -50,13 +54,17 @@ def test_multiple_terms_with_definitions():
             'def_list': {
                 'term': 'term 1',
                 'list': ['definition 1.1', 'definition 1.2']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         },
         {
             'def_list': {
                 'term': 'term 2',
                 'list': ['definition 2.1']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -76,7 +84,9 @@ def test_mixed_content():
             'def_list': {
                 'term': 'term',
                 'list': ['definition']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         },
         {'h1': 'A heading'}
     ]
@@ -104,14 +114,18 @@ def test_example_from_docstring():
             'def_list': {
                 'term': 'term 1',
                 'list': ['definition 1', 'definition 2']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         },
         {'p': '', 'indent': 0},
         {
             'def_list': {
                 'term': 'term 2',
                 'list': ['definition 1', 'definition 2']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         },
         {'p': '', 'indent': 0}
     ]
@@ -143,7 +157,9 @@ def test_term_without_definition():
             'def_list': {
                 'term': 'lonely term',
                 'list': []
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         },
         {'p': 'A paragraph'}
     ]

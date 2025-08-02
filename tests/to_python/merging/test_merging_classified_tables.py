@@ -15,7 +15,9 @@ def test_basic_table_with_headers():
                 'Name': ['John', 'Jane'],
                 'Age': [25, 30],
                 'City': ['NYC', 'LA']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -34,7 +36,9 @@ def test_table_without_headers():
                 'col_1': ['John', 'Jane'],
                 'col_2': [25, 30],
                 'col_3': ['NYC', 'LA']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -56,7 +60,9 @@ def test_inconsistent_columns():
                 'B': [2, 2],
                 'C': [None, 3],
                 'col_4': [None, 4]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -78,7 +84,9 @@ def test_mixed_content():
             'table': {
                 'A': [1],
                 'B': [2]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         },
         {'h1': 'Header'}
     ]
@@ -98,7 +106,9 @@ def test_empty_table():
         {
             'table': {
                 'Header': [None, None]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -120,13 +130,17 @@ def test_multiple_tables():
         {
             'table': {
                 'A': [1]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         },
         {'p': 'Between tables'},
         {
             'table': {
                 'X': ['Y']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -143,7 +157,9 @@ def test_single_row_table():
             'table': {
                 'col_1': ['Single'],
                 'col_2': ['Row']
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
@@ -164,7 +180,9 @@ def test_table_with_mixed_types():
                 'Item': ['Apple', 'Orange'],
                 'Count': [5, None],
                 'Price': [1.99, 2.50]
-            }
+            },
+            'start_line': 0,
+            'end_line': 0
         }
     ]
 
