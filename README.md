@@ -19,7 +19,7 @@ Convert markdown and its elements (tables, lists, code, etc.) into structured, e
 - [x] Provide comprehensive documentation
 - [x] Add more test coverage --> 215 test cases
 - [x] Publish on PyPI
-- [ ] CLI tool
+- [ ] Add line numbers (`start_line` and `end_line`) to parsed markdown elements
 - [ ] Align with edge cases of [Common Markdown Specification](https://spec.commonmark.org/0.31.2/)
 
 ## Quick Overview
@@ -149,34 +149,34 @@ print(md.md_elements)
 ```python
 {
     'metadata': {
-        'count': 1, 
-        'positions': [0], 
+        'count': 1,
+        'positions': [0],
         'variants': ['3_fields'],
         'summary': {}
     },
     'header': {
-        'count': 2, 
-        'positions': [1, 3], 
+        'count': 2,
+        'positions': [1, 3],
         'variants': ['h1', 'h2'],
         'summary': {
             'levels': {1: 1, 2: 1}
         }
     },
     'list': {
-        'count': 1, 
-        'positions': [2], 
+        'count': 1,
+        'positions': [2],
         'variants': ['task', 'ul'],
         'summary': {
             'task_stats': {
                 'checked': 1,
-                'unchecked': 1, 
+                'unchecked': 1,
                 'total_tasks': 2
             }
         }
     },
     'table': {
-        'count': 1, 
-        'positions': [4], 
+        'count': 1,
+        'positions': [4],
         'variants': ['2_columns'],
         'summary': {
             'column_counts': [2],
@@ -184,8 +184,8 @@ print(md.md_elements)
         }
     },
     'code': {
-        'count': 1, 
-        'positions': [5], 
+        'count': 1,
+        'positions': [5],
         'variants': ['python'],
         'summary': {
             'languages': {
