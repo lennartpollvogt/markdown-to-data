@@ -105,9 +105,10 @@ def classify_markdown_line_by_line(markdown: Text) -> List[Dict[str, Any]]:
 
         if is_def_item:
             if 'convert_previous' in def_item_dict:
-                # Both the converted previous and current should have the same line number
-                # since they represent the same logical definition list
-                def_item_dict['convert_previous']['line'] = line_number
+                # The term should keep its original line number, the definition gets current line number
+                # Get the previous line number from the last classified element
+                previous_line = classified_list[-1].get('line', line_number - 1) if classified_list else line_number - 1
+                def_item_dict['convert_previous']['line'] = previous_line
                 def_item_dict['current']['line'] = line_number
 
                 if classified_list:
