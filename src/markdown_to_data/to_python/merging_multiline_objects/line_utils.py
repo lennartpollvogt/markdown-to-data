@@ -11,14 +11,27 @@ from typing import List, Dict, Any, Tuple
 def calculate_line_range(elements: List[Dict[str, Any]]) -> Tuple[int, int]:
     """
     Calculate start_line and end_line from a list of classified elements.
+    Handles both original format (line field) and converted format (start_line/end_line fields).
 
     Args:
-        elements: List of classified markdown elements, each potentially containing a 'line' field
+        elements: List of classified markdown elements, each potentially containing line information
 
     Returns:
         Tuple of (start_line, end_line). Returns (0, 0) if no line information is found.
     """
-    line_numbers = [elem.get('line', 0) for elem in elements if 'line' in elem and elem['line'] > 0]
+    line_numbers = []
+
+    for elem in elements:
+        # Handle original classification format
+        if 'line' in elem and elem['line'] > 0:
+            line_numbers.append(elem['line'])
+        # Handle converted element format
+        elif 'start_line' in elem and 'end_line' in elem:
+            if elem['start_line'] > 0:
+                line_numbers.append(elem['start_line'])
+            if elem['end_line'] > 0 and elem['end_line'] != elem['start_line']:
+                line_numbers.append(elem['end_line'])
+
     if not line_numbers:
         return 0, 0
     return min(line_numbers), max(line_numbers)

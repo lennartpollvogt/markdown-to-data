@@ -40,9 +40,13 @@ def merge_classified_markdown_lines(classified_list: List[Dict[str, Any]]) -> Li
     """
     merged_elements = []
 
+    # METADATA - Process first to preserve line information
+    # Merge metadata
+    merged_elements = merge_metadata(classified_list=classified_list)
+
     # MERGING MULTLINE ELEMENTS TOGETHER
     # Merge lists
-    merged_elements = merge_lists(classified_md=classified_list)
+    merged_elements = merge_lists(classified_md=merged_elements)
     # Merge definition lists
     merged_elements = merge_definition_lists(classified_md=merged_elements)
     # Merge definition lists
@@ -59,10 +63,6 @@ def merge_classified_markdown_lines(classified_list: List[Dict[str, Any]]) -> Li
     merged_elements = convert_paragraphs(classified_list=merged_elements)
     # Convert separators
     merged_elements = convert_separators(classified_list=merged_elements)
-
-    # METADATA
-    # Merge metadata
-    merged_elements = merge_metadata(classified_list=merged_elements)
 
     # EMPTY PARAGRAPHS -> REMOVE
     merged_elements = [

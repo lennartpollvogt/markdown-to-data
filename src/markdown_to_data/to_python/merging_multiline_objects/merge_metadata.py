@@ -4,19 +4,27 @@ from .line_utils import calculate_line_range, add_line_range_to_element
 
 def _is_separator(item: Dict[str, Any]) -> bool:
     """Check if an item is a separator."""
-    return 'separator' in item
+    return 'separator' in item or 'hr' in item
 
 def _is_paragraph(item: Dict[str, Any]) -> bool:
     """Check if an item is a paragraph."""
-    return 'paragraph' in item
+    return 'paragraph' in item or 'p' in item
 
 def _is_empty_paragraph(item: Dict[str, Any]) -> bool:
     """Check if an item is an empty paragraph."""
-    return _is_paragraph(item) and not item['paragraph'].strip()
+    if 'paragraph' in item:
+        return not item['paragraph'].strip()
+    elif 'p' in item:
+        return not item['p'].strip()
+    return False
 
 def _get_separator_type(item: Dict[str, Any]) -> str | None:
     """Get the separator type if item is a separator."""
-    return item.get('separator') if _is_separator(item) else None
+    if 'separator' in item:
+        return item.get('separator')
+    elif 'hr' in item:
+        return item.get('hr')
+    return None
 
 def _is_valid_key_value_pair(text: str) -> Tuple[bool, Tuple[str, str] | None]:
     """
@@ -145,7 +153,9 @@ def _validate_metadata_block(items: List[Dict[str, Any]]) -> bool:
         if not _is_paragraph(item):
             return False
         if not _is_empty_paragraph(item):
-            is_valid, _ = _is_valid_key_value_pair(item['paragraph'])
+            # Get paragraph content from either format
+            paragraph_content = item.get('paragraph') or item.get('p', '')
+            is_valid, _ = _is_valid_key_value_pair(paragraph_content)
             if not is_valid:
                 return False
 
@@ -173,7 +183,9 @@ def merge_metadata(classified_list: List[Dict[str, Any]]) -> List[Dict[str, Any]
     metadata = {}
     for item in classified_list[start_idx + 1:end_idx]:
         if not _is_empty_paragraph(item):
-            is_valid, kv_pair = _is_valid_key_value_pair(item['paragraph'])
+            # Get paragraph content from either format
+            paragraph_content = item.get('paragraph') or item.get('p', '')
+            is_valid, kv_pair = _is_valid_key_value_pair(paragraph_content)
             if is_valid and kv_pair is not None:
                 key, value = kv_pair
                 normalized_key = _normalize_key(key)
