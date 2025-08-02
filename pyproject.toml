@@ -1,6 +1,6 @@
 [project]
 name = "markdown-to-data"
-version = "1.0.0"
+version = "2.0.0"
 description = "Convert markdown and its elements (tables, lists, code, etc.) into structured, easily processable data formats like lists and hierarchical dictionaries (or JSON), with support for parsing back to markdown."
 readme = "README.md"
 license = "MIT"
@@ -41,8 +41,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = [
-    "pytest>=8.3.3",
-    "rich>=13.9.4",
-    "ruff>=0.8.4",
-]
+dev = ["pytest>=8.3.3", "rich>=13.9.4", "ruff>=0.8.4"]

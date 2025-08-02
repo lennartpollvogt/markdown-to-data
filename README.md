@@ -78,8 +78,16 @@ print(md.md_elements)
 
 ```python
 [
-    {'metadata': {'title': 'Example text', 'author': 'John Doe'}},
-    {'header': {'level': 1, 'content': 'Main Header'}},
+    {
+        'metadata': {'title': 'Example text', 'author': 'John Doe'},
+        'start_line': 2,
+        'end_line': 5
+    },
+    {
+        'header': {'level': 1, 'content': 'Main Header'},
+        'start_line': 7,
+        'end_line': 7
+    },
     {
         'list': {
             'type': 'ul',
@@ -97,15 +105,27 @@ print(md.md_elements)
                 },
                 {'content': 'Completed task', 'items': [], 'task': 'checked'}
             ]
-        }
+        },
+        'start_line': 9,
+        'end_line': 11
     },
-    {'header': {'level': 2, 'content': 'Table Example'}},
-    {'table': {'Column 1': ['Cell 1'], 'Column 2': ['Cell 2']}},
+    {
+        'header': {'level': 2, 'content': 'Table Example'},
+        'start_line': 13,
+        'end_line': 13
+    },
+    {
+        'table': {'Column 1': ['Cell 1'], 'Column 2': ['Cell 2']},
+        'start_line': 14,
+        'end_line': 16
+    },
     {
         'code': {
             'language': 'python',
             'content': 'def hello():\n    print("Hello World!")'
-        }
+        },
+        'start_line': 18,
+        'end_line': 21
     }
 ]
 ```
@@ -151,47 +171,32 @@ print(md.md_elements)
     'metadata': {
         'count': 1,
         'positions': [0],
-        'variants': ['3_fields'],
+        'variants': ['2_fields'],
         'summary': {}
     },
     'header': {
         'count': 2,
         'positions': [1, 3],
         'variants': ['h1', 'h2'],
-        'summary': {
-            'levels': {1: 1, 2: 1}
-        }
+        'summary': {'levels': {1: 1, 2: 1}}
     },
     'list': {
         'count': 1,
         'positions': [2],
         'variants': ['task', 'ul'],
-        'summary': {
-            'task_stats': {
-                'checked': 1,
-                'unchecked': 1,
-                'total_tasks': 2
-            }
-        }
+        'summary': {'task_stats': {'checked': 2, 'unchecked': 1, 'total_tasks': 3}}
     },
     'table': {
         'count': 1,
         'positions': [4],
         'variants': ['2_columns'],
-        'summary': {
-            'column_counts': [2],
-            'total_cells': 2
-        }
+        'summary': {'column_counts': [2], 'total_cells': 2}
     },
-    'code': {
-        'count': 1,
-        'positions': [5],
-        'variants': ['python'],
-        'summary': {
-            'languages': {
-                'python': 1
-            }
-        }
+    'paragraph': {
+        'count': 4,
+        'positions': [5, 6, 7, 8],
+        'variants': [],
+        'summary': {}
     }
 }
 ```
@@ -348,7 +353,9 @@ Output:
             'title': 'Document',
             'author': 'John Doe',
             'tags': ['markdown', 'documentation']
-        }
+        },
+        'start_line': 2,
+        'end_line': 6
     }
 ]
 ```
@@ -371,22 +378,22 @@ Output:
 ```python
 [
     {
-        'header': {
-            'level': 1,
-            'content': 'Main Title'
-        }
+        'header': {'level': 1, 'content': 'Main Title'},
+        'start_line': 2,
+        'end_line': 2
     },
     {
         'header': {
             'level': 2,
             'content': 'Section'
-        }
+        },
+        'start_line': 3,
+        'end_line': 3
     },
     {
-        'header': {
-            'level': 3,
-            'content': 'Subsection'
-        }
+        'header': {'level': 3, 'content': 'Subsection'},
+        'start_line': 4,
+        'end_line': 4
     }
 ]
 ```
@@ -434,7 +441,9 @@ Output:
                     'task': 'checked'
                 }
             ]
-        }
+        },
+        'start_line': 2,
+        'end_line': 5
     },
     {
         'list': {
@@ -448,7 +457,9 @@ Output:
                     'task': None
                 }
             ]
-        }
+        },
+        'start_line': 6,
+        'end_line': 7
     }
 ]
 ```
@@ -475,7 +486,9 @@ Output:
         'table': {
             'Header 1': ['Value 1', 'Value 3'],
             'Header 2': ['Value 2', 'Value 4']
-        }
+        },
+        'start_line': 2,
+        'end_line': 5
     }
 ]
 ```
@@ -506,13 +519,14 @@ Output:
         'code': {
             'language': 'python',
             'content': 'def example():\n    return "Hello"'
-        }
+        },
+        'start_line': 2,
+        'end_line': 5
     },
     {
-        'code': {
-            'language': 'javascript',
-            'content': 'console.log("Hello");'
-        }
+        'code': {'language': 'javascript', 'content': 'console.log("Hello");'},
+        'start_line': 7,
+        'end_line': 9
     }
 ]
 ```
@@ -541,18 +555,20 @@ Output:
         'blockquote': [
             {'content': 'Simple quote', 'items': []},
             {'content': 'Multiple lines', 'items': []}
-        ]
+        ],
+        'start_line': 2,
+        'end_line': 3
     },
     {
         'blockquote': [
             {
                 'content': 'Nested quote',
-                'items': [
-                    {'content': 'Inner quote', 'items': []}
-                ]
+                'items': [{'content': 'Inner quote', 'items': []}]
             },
             {'content': 'Back to outer', 'items': []}
-        ]
+        ],
+        'start_line': 5,
+        'end_line': 7
     }
 ]
 ```
@@ -575,10 +591,9 @@ Output:
 ```python
 [
     {
-        'def_list': {
-            'term': 'Term',
-            'list': ['Definition 1', 'Definition 2']
-        }
+        'def_list': {'term': 'Term', 'list': ['Definition 1', 'Definition 2']},
+        'start_line': 2,
+        'end_line': 4
     }
 ]
 ```
