@@ -169,8 +169,8 @@ Term 3
         elements = md.md_elements
 
         assert 'def_list' in elements
-        assert elements['def_list']['count'] == 2
-        assert set(elements['def_list']['variants']) == {'1_definitions', '3_definitions'}
+        assert elements['def_list']['count'] == 3
+        assert set(elements['def_list']['variants']) == {'1_definitions', '2_definitions', '3_definitions'}
 
     def test_metadata_variants(self):
         """Test metadata field count tracking."""
