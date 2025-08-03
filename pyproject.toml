@@ -30,7 +30,7 @@ classifiers = [
     "Topic :: Text Processing :: Markup :: Markdown",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = []
+dependencies = ['tomli >= 1.2.0 ; python_version < "3.11"']
 
 [project.urls]
 Homepage = 'https://github.com/lennartpollvogt/markdown-to-data'

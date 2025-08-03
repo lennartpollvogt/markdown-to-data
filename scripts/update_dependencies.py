@@ -9,7 +9,10 @@ import json
 import urllib.request
 import urllib.error
 from pathlib import Path
-import tomllib
+try:
+    import tomllib  # Python 3.11+
+except ImportError:
+    import tomli as tomllib  # Python 3.10 and earlier
 from typing import Dict, List, Tuple, Optional
 
 
