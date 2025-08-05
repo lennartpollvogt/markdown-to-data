@@ -19,7 +19,7 @@ Convert markdown and its elements (tables, lists, code, etc.) into structured, e
 - [x] Provide comprehensive documentation
 - [x] Add more test coverage --> 215 test cases
 - [x] Publish on PyPI
-- [ ] Add line numbers (`start_line` and `end_line`) to parsed markdown elements
+- [x] Add line numbers (`start_line` and `end_line`) to parsed markdown elements
 - [ ] Align with edge cases of [Common Markdown Specification](https://spec.commonmark.org/0.31.2/)
 
 ## Quick Overview
