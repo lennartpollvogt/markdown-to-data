@@ -16,7 +16,18 @@ def _create_list_item(item: Dict[str, Any]) -> Dict[str, Any]:
     """Create a structured list item from classified markdown item."""
     list_type = _get_list_type(item)
     if list_type is not None:
-        content = item[list_type]['li']['p']
+        li_content = item[list_type]['li']
+
+        # Extract content from various possible keys (p, h1, h2, etc.)
+        # The li_content is a dict with content key (p, h1-h6, etc.) and possibly 'indent'
+        content = None
+        for key, value in li_content.items():
+            if key != 'indent':  # Skip the indent key
+                content = value
+                break
+
+        if content is None:
+            content = ''  # Default to empty string if no content found
     else:
         raise Exception
 
