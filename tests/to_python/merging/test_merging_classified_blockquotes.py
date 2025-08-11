@@ -222,3 +222,142 @@ def test_example_from_docstring():
     ]
 
     assert merge_blockquotes(input_data) == expected
+
+def test_blockquote_with_header():
+    """Test merging blockquotes containing headers."""
+    input_data = [
+        {
+            'blockquote': {'h1': 'Header in blockquote', 'indent': 0},
+            'level': 1,
+            'line': 1
+        },
+        {
+            'blockquote': {'p': 'Normal text in blockquote', 'indent': 0},
+            'level': 1,
+            'line': 2
+        }
+    ]
+
+    expected = [
+        {
+            'blockquote': [
+                {
+                    'content': 'Header in blockquote',
+                    'items': []
+                },
+                {
+                    'content': 'Normal text in blockquote',
+                    'items': []
+                }
+            ],
+            'start_line': 1,
+            'end_line': 2
+        }
+    ]
+
+    assert merge_blockquotes(input_data) == expected
+
+def test_blockquote_with_multiple_header_levels():
+    """Test merging blockquotes with various header levels."""
+    input_data = [
+        {
+            'blockquote': {'h1': 'H1 in quote', 'indent': 0},
+            'level': 1,
+            'line': 1
+        },
+        {
+            'blockquote': {'h2': 'H2 in quote', 'indent': 0},
+            'level': 1,
+            'line': 2
+        },
+        {
+            'blockquote': {'h3': 'H3 in quote', 'indent': 0},
+            'level': 1,
+            'line': 3
+        },
+        {
+            'blockquote': {'p': 'Normal text', 'indent': 0},
+            'level': 1,
+            'line': 4
+        }
+    ]
+
+    expected = [
+        {
+            'blockquote': [
+                {
+                    'content': 'H1 in quote',
+                    'items': []
+                },
+                {
+                    'content': 'H2 in quote',
+                    'items': []
+                },
+                {
+                    'content': 'H3 in quote',
+                    'items': []
+                },
+                {
+                    'content': 'Normal text',
+                    'items': []
+                }
+            ],
+            'start_line': 1,
+            'end_line': 4
+        }
+    ]
+
+    assert merge_blockquotes(input_data) == expected
+
+def test_nested_blockquote_with_headers():
+    """Test merging nested blockquotes containing headers."""
+    input_data = [
+        {
+            'blockquote': {'h1': 'Main quote header', 'indent': 0},
+            'level': 1,
+            'line': 1
+        },
+        {
+            'blockquote': {'h2': 'Nested quote header', 'indent': 0},
+            'level': 2,
+            'line': 2
+        },
+        {
+            'blockquote': {'p': 'Nested text', 'indent': 0},
+            'level': 2,
+            'line': 3
+        },
+        {
+            'blockquote': {'p': 'Back to main quote', 'indent': 0},
+            'level': 1,
+            'line': 4
+        }
+    ]
+
+    expected = [
+        {
+            'blockquote': [
+                {
+                    'content': 'Main quote header',
+                    'items': [
+                        {
+                            'content': 'Nested quote header',
+                            'items': []
+                        },
+                        {
+                            'content': 'Nested text',
+                            'items': []
+                        }
+                    ]
+                },
+                {
+                    'content': 'Back to main quote',
+                    'items': []
+                }
+            ],
+            'start_line': 1,
+            'end_line': 4
+        }
+    ]
+
+    assert merge_blockquotes(input_data) == expected

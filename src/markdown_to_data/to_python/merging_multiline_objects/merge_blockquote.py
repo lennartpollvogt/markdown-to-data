@@ -81,7 +81,15 @@ def _get_blockquote_content(item: Dict[str, Any]) -> str:
         'detailed text'
         """
     if isinstance(item['blockquote'], dict):
-        return item['blockquote']['p']
+        # Extract content from various possible keys (p, h1, h2, etc.)
+        blockquote_content = item['blockquote']
+        if isinstance(blockquote_content, dict):
+            # Find the content key (everything except 'indent')
+            for key, value in blockquote_content.items():
+                if key != 'indent':
+                    return value
+            return ''  # Default to empty string if no content found
+        return blockquote_content
     return item['blockquote']
 
 def _build_nested_blockquote(items: List[Dict[str, Any]], start_idx: int, base_level: int) -> Tuple[List[Dict[str, Any]], int]:
