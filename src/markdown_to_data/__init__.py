@@ -9,7 +9,3 @@ __all__ = [
     'Markdown',
     'to_md_parser'
 ]
-
-from importlib.metadata import version
-
-__version__ = version("markdown-to-data")
