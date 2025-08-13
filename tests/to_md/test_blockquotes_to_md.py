@@ -6,7 +6,7 @@ def test_simple_blockquote():
             {'content': 'A simple blockquote', 'items': []}
         ]
     }
-    expected = "> A simple blockquote\n"
+    expected = "> A simple blockquote"
     assert blockquote_data_to_md(data) == expected
 
 def test_multiline_blockquote():
@@ -17,7 +17,7 @@ def test_multiline_blockquote():
             {'content': 'Third line', 'items': []}
         ]
     }
-    expected = "> First line\n> Second line\n> Third line\n"
+    expected = "> First line\n> Second line\n> Third line"
     assert blockquote_data_to_md(data) == expected
 
 def test_nested_blockquote():
@@ -39,7 +39,7 @@ def test_nested_blockquote():
             }
         ]
     }
-    expected = "> Level one\n>> Level two\n>>> Level three\n"
+    expected = "> Level one\n>> Level two\n>>> Level three"
     assert blockquote_data_to_md(data) == expected
 
 def test_mixed_nesting_levels():
@@ -59,12 +59,12 @@ def test_mixed_nesting_levels():
             }
         ]
     }
-    expected = "> First level\n>> Second level\n> Back to first\n>> Deep level\n"
+    expected = "> First level\n>> Second level\n> Back to first\n>> Deep level"
     assert blockquote_data_to_md(data) == expected
 
 def test_empty_blockquote():
     data = {'blockquote': [{'content': '', 'items': []}]}
-    expected = "> \n"
+    expected = "> "
     assert blockquote_data_to_md(data) == expected
 
 def test_invalid_input():
@@ -78,7 +78,7 @@ def test_deeply_nested_blockquote():
             {'content': 'Five levels deep', 'items': []}
         ]
     }
-    expected = "> Five levels deep\n"
+    expected = "> Five levels deep"
     assert blockquote_data_to_md(data) == expected
 
 def test_mixed_content_types():
@@ -89,7 +89,7 @@ def test_mixed_content_types():
             {'content': 'True', 'items': []}    # boolean as string
         ]
     }
-    expected = "> String\n> 123\n> True\n"
+    expected = "> String\n> 123\n> True"
     assert blockquote_data_to_md(data) == expected
 
 # Additional test cases for the new structure
@@ -110,7 +110,7 @@ def test_multiple_nested_levels():
             }
         ]
     }
-    expected = "> First\n>> Second\n>>> Third\n>> Back to second\n"
+    expected = "> First\n>> Second\n>>> Third\n>> Back to second"
     assert blockquote_data_to_md(data) == expected
 
 def test_empty_nested_items():
@@ -122,5 +122,5 @@ def test_empty_nested_items():
             }
         ]
     }
-    expected = "> Main content\n"
+    expected = "> Main content"
     assert blockquote_data_to_md(data) == expected

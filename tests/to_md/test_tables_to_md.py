@@ -12,7 +12,7 @@ def test_basic_table():
         "| Name  | Age | City     |\n"
         "|-------|-----|----------|\n"
         "| John  | 30  | New York |\n"
-        "| Alice | 25  | London   |\n"
+        "| Alice | 25  | London   |"
     )
     assert table_data_to_md(data) == expected
 
@@ -30,7 +30,7 @@ def test_complex_sales_table():
         "| Service        | Q1 Sales ($) | Q2 Sales ($) | Total Sales ($) | Growth (%) |\n"
         "|----------------|--------------|--------------|-----------------|------------|\n"
         "| Cloud Services | 100000       | 150000       | 250000          | 50%        |\n"
-        "| Maintenance    | 80000        | 90000        | 170000          | 12.5%      |\n"
+        "| Maintenance    | 80000        | 90000        | 170000          | 12.5%      |"
     )
     assert table_data_to_md(data) == expected
 
@@ -55,7 +55,7 @@ def test_single_row_table():
     expected = (
         "| Header1 | Header2 |\n"
         "|---------|---------|\n"
-        "| Value1  | Value2  |\n"
+        "| Value1  | Value2  |"
     )
     assert table_data_to_md(data) == expected
 
@@ -71,7 +71,7 @@ def test_different_data_types():
     expected = (
         "| String | Number | Boolean | None |\n"
         "|--------|--------|---------|------|\n"
-        "| text   | 42     | True    | None |\n"
+        "| text   | 42     | True    | None |"
     )
     assert table_data_to_md(data) == expected
 
@@ -88,7 +88,7 @@ def test_table_with_missing_values():
         "| A | B | C    | col_4 |\n"
         "|---|---|------|-------|\n"
         "| 1 | 2 | None | None  |\n"
-        "| 1 | 2 | 3    | 4     |\n"
+        "| 1 | 2 | 3    | 4     |"
     )
     assert table_data_to_md(data) == expected
 
@@ -104,6 +104,6 @@ def test_table_without_headers():
         "| col_1 | col_2 | col_3 |\n"
         "|-------|-------|-------|\n"
         "| John  | 25    | NYC   |\n"
-        "| Jane  | 30    | LA    |\n"
+        "| Jane  | 30    | LA    |"
     )
     assert table_data_to_md(data) == expected

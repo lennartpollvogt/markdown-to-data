@@ -59,4 +59,4 @@ def header_data_to_md(data: Dict[str, Any]) -> Text:
 
     # Format header with content
     # Ensure content is converted to string and stripped of leading/trailing whitespace
-    return f"{header_marks} {str(content).strip()}\n"
+    return f"{header_marks} {str(content).strip()}"

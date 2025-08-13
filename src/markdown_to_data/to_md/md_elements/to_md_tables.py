@@ -99,4 +99,4 @@ def table_data_to_md(data: Dict[str, Any]) -> Text:
 
     # Combine all parts with newlines
     table_parts = [header_row, separator_row] + data_rows
-    return '\n'.join(table_parts) + '\n'
+    return '\n'.join(table_parts)

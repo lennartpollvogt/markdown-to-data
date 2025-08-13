@@ -2,28 +2,28 @@ from src.markdown_to_data.to_md.md_elements.to_md_headers import header_data_to_
 
 def test_basic_h1():
     data = {'header': {'level': 1, 'content': 'Basic Title'}}
-    expected = "# Basic Title\n"
+    expected = "# Basic Title"
     assert header_data_to_md(data) == expected
 
 def test_basic_h2():
     data = {'header': {'level': 2, 'content': 'Subtitle'}}
-    expected = "## Subtitle\n"
+    expected = "## Subtitle"
     assert header_data_to_md(data) == expected
 
 def test_all_header_levels():
     for level in range(1, 7):
         data = {'header': {'level': level, 'content': f'Header {level}'}}
-        expected = f"{'#' * level} Header {level}\n"
+        expected = f"{'#' * level} Header {level}"
         assert header_data_to_md(data) == expected
 
 def test_with_empty_content():
     data = {'header': {'level': 1, 'content': ''}}
-    expected = "# \n"
+    expected = "# "
     assert header_data_to_md(data) == expected
 
 def test_with_whitespace_content():
     data = {'header': {'level': 1, 'content': '   Spaced Content   '}}
-    expected = "# Spaced Content\n"
+    expected = "# Spaced Content"
     assert header_data_to_md(data) == expected
 
 def test_with_invalid_level():
@@ -68,5 +68,5 @@ def test_with_none_input():
 
 def test_with_non_string_content():
     data = {'header': {'level': 1, 'content': 123}}
-    expected = "# 123\n"
+    expected = "# 123"
     assert header_data_to_md(data) == expected

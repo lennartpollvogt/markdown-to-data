@@ -44,4 +44,4 @@ def blockquote_data_to_md(data: Dict[str, Any]) -> Text:
     for item in data['blockquote']:
         result.extend(process_blockquote_item(item))
 
-    return '\n'.join(result) + '\n'
+    return '\n'.join(result)
