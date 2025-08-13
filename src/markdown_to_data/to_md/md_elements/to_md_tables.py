@@ -60,7 +60,7 @@ def create_separator(headers: List[str], widths: Dict[str, int]) -> str:
     """Create separator row."""
     return '|' + '|'.join('-' * width for width in widths.values()) + '|'
 
-def table_data_to_md(data: Dict[str, Any]) -> Text:
+def table_data_to_md(data: Dict[str, Any] | None) -> Text:
     """
     Convert table data to markdown table format.
 

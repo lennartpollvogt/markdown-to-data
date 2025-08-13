@@ -8,7 +8,7 @@ and task list properties.
 from typing import List, Dict, Any, Tuple
 from .line_utils import calculate_line_range, add_line_range_to_element
 
-def _get_list_type(item: Dict[str, Any]) -> str:
+def _get_list_type(item: Dict[str, Any]) -> str | None:
     """Determine the type of list item (ul or ol)."""
     return 'ul' if 'ul' in item else 'ol' if 'ol' in item else None
 
