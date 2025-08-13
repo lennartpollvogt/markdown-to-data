@@ -11,7 +11,7 @@ def get_header_level_type(level: int) -> str:
     """Convert numeric header level to type string."""
     return f'h{level}'
 
-def header_data_to_md(data: Dict[str, Any]) -> Text:
+def header_data_to_md(data: Dict[str, Any] | None) -> Text:
     """
     Convert header data to markdown format.
 
